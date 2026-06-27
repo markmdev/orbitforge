@@ -1,5 +1,19 @@
-import { Activity, BrainCircuit, Gauge, GitCompare, Radar, RotateCcw, Satellite, ShieldCheck, Sparkles } from 'lucide-react';
+import {
+  Activity,
+  BrainCircuit,
+  Gauge,
+  GitCompare,
+  MousePointerClick,
+  Radar,
+  RotateCcw,
+  Satellite,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { buildAuditSnapshot } from './ai/auditSnapshot';
+import type { GeminiComputerAuditTrace } from './ai/geminiComputerAudit';
+import { requestGeminiComputerAudit } from './ai/geminiComputerAudit';
 import type { GeminiCritiqueTrace, GeminiPlanTrace } from './ai/geminiPlan';
 import { requestGeminiCritique, requestGeminiPlan } from './ai/geminiPlan';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
@@ -44,6 +58,11 @@ export function App() {
     status: 'idle',
     model: 'gemini-3.5-flash',
   });
+  const [computerAuditTrace, setComputerAuditTrace] = useState<GeminiComputerAuditTrace>({
+    status: 'idle',
+    model: 'gemini-3.5-flash',
+    actions: [],
+  });
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
   const improvementCycle = useMemo(
@@ -81,13 +100,55 @@ export function App() {
         status: 'complete',
         detail: `App-owned evaluator swept ${scenarios.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`,
       },
-      traceEvents[4],
+      {
+        ...traceEvents[4],
+        source: computerAuditTrace.status === 'live' ? 'gemini-live' : computerAuditTrace.status === 'loading' ? 'operator' : 'gemini-fallback',
+        status: computerAuditTrace.status === 'idle' ? 'ready' : computerAuditTrace.status === 'loading' ? 'running' : computerAuditTrace.status === 'live' ? 'complete' : 'blocked',
+        detail: getComputerAuditDetail(computerAuditTrace),
+      },
     ],
-    [activeScenario, geminiCritiqueTrace, geminiPlanTrace, improvementCycle.averageDelta, improvementCycle.promoted],
+    [activeScenario, computerAuditTrace, geminiCritiqueTrace, geminiPlanTrace, improvementCycle.averageDelta, improvementCycle.promoted],
   );
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
     setActiveView('console');
+  };
+  const runComputerAudit = async () => {
+    setComputerAuditTrace({
+      status: 'loading',
+      model: 'gemini-3.5-flash',
+      actions: [],
+    });
+
+    try {
+      const snapshot = buildAuditSnapshot({
+        activeView,
+        scenario: activeScenario,
+        policy: currentPolicy,
+        improvementCycle,
+        planTrace: geminiPlanTrace,
+        critiqueTrace: geminiCritiqueTrace,
+      });
+      const trace = await requestGeminiComputerAudit({
+        task: 'Inspect this OrbitForge demo state and propose the next UI action or inspection that would most improve judge readiness.',
+        ...snapshot,
+      });
+
+      setComputerAuditTrace(trace);
+    } catch (error) {
+      setComputerAuditTrace({
+        status: 'fallback',
+        model: 'gemini-fallback',
+        error: error instanceof Error ? error.message : 'Unknown local audit snapshot failure',
+        actions: [
+          {
+            name: 'blocked',
+            intent: 'Local audit snapshot could not be generated, so use manual browser QA.',
+            safetyDecision: 'blocked',
+          },
+        ],
+      });
+    }
   };
 
   useEffect(() => {
@@ -410,7 +471,7 @@ export function App() {
                 </div>
                 <div>
                   <p className="eyebrow">Model output preview</p>
-                  <pre>{geminiPlanTrace.outputText ?? geminiPlanTrace.error ?? 'No model output captured yet.'}</pre>
+                  <pre>{geminiPlanTrace.outputText || geminiPlanTrace.error || 'No model output captured yet.'}</pre>
                 </div>
               </div>
             </article>
@@ -444,7 +505,52 @@ export function App() {
                 </div>
                 <div>
                   <p className="eyebrow">Critique output preview</p>
-                  <pre>{geminiCritiqueTrace.outputText ?? geminiCritiqueTrace.error ?? 'No critique output captured yet.'}</pre>
+                  <pre>{geminiCritiqueTrace.outputText || geminiCritiqueTrace.error || 'No critique output captured yet.'}</pre>
+                </div>
+              </div>
+            </article>
+            <article className="gemini-output audit-output">
+              <div className="audit-header">
+                <div>
+                  <p className="eyebrow">Gemini computer-use audit</p>
+                  <h3>{computerAuditTrace.status === 'live' ? 'Audit received' : computerAuditTrace.status === 'idle' ? 'Audit ready' : 'Audit fallback'}</h3>
+                  <p>{computerAuditTrace.outputText || computerAuditTrace.error || 'Generate a local audit frame and ask Gemini 3.5 Flash computer-use to suggest the next QA action.'}</p>
+                </div>
+                <button
+                  className="reset-button"
+                  type="button"
+                  onClick={runComputerAudit}
+                  disabled={computerAuditTrace.status === 'loading'}
+                >
+                  <MousePointerClick size={16} />
+                  Run audit
+                </button>
+              </div>
+              <div className="score-grid">
+                <Metric label="Model" value={computerAuditTrace.model} />
+                <Metric label="Status" value={computerAuditTrace.status} />
+                <Metric label="Actions" value={String(computerAuditTrace.actions.length)} />
+                <Metric label="Latency" value={formatLatency(computerAuditTrace)} />
+              </div>
+              {computerAuditTrace.actions.length > 0 && (
+                <div className="diff-list">
+                  {computerAuditTrace.actions.map((action, index) => (
+                    <code key={`${action.name}-${index}`}>
+                      {action.name}: {action.intent}
+                      {typeof action.x === 'number' && typeof action.y === 'number' ? ` @ ${action.x},${action.y}` : ''}
+                      {action.safetyDecision ? ` (${action.safetyDecision})` : ''}
+                    </code>
+                  ))}
+                </div>
+              )}
+              <div className="trace-preview-grid">
+                <div>
+                  <p className="eyebrow">Audit prompt preview</p>
+                  <pre>{computerAuditTrace.promptPreview ?? 'No computer-use prompt captured yet.'}</pre>
+                </div>
+                <div>
+                  <p className="eyebrow">Audit output preview</p>
+                  <pre>{computerAuditTrace.outputText || computerAuditTrace.error || 'No computer-use output captured yet.'}</pre>
                 </div>
               </div>
             </article>
@@ -521,7 +627,27 @@ function getGeminiCritiqueDetail(trace: GeminiCritiqueTrace): string {
   return 'Gemini critique has not started yet.';
 }
 
-function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace): string {
+function getComputerAuditDetail(trace: GeminiComputerAuditTrace): string {
+  if (trace.status === 'idle') {
+    return 'Computer-use audit is ready to run from the current seeded UI state.';
+  }
+
+  if (trace.status === 'loading') {
+    return 'Gemini 3.5 Flash computer-use audit is inspecting the generated audit frame.';
+  }
+
+  if (trace.status === 'live') {
+    return `Computer-use audit returned ${trace.actions.length} proposed action${trace.actions.length === 1 ? '' : 's'} for judge-readiness QA.`;
+  }
+
+  if (trace.error) {
+    return `Computer-use audit is blocked, so the app shows the exact fallback reason: ${trace.error}`;
+  }
+
+  return 'Computer-use audit status is unavailable.';
+}
+
+function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace | GeminiComputerAuditTrace): string {
   if (trace.cacheHit) {
     return 'cache';
   }

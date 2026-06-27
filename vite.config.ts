@@ -22,8 +22,33 @@ type CachedGeminiResult = GeminiResult & {
   cachedAt: number;
 };
 
+type ComputerUseAction = {
+  name: string;
+  intent: string;
+  x?: number;
+  y?: number;
+  safetyDecision?: string;
+};
+
+type ComputerUseResult = {
+  ok: boolean;
+  status: 'live' | 'blocked';
+  model: string;
+  latencyMs: number;
+  promptPreview: string;
+  outputText: string;
+  actions: ComputerUseAction[];
+  cacheHit: boolean;
+  error?: string;
+};
+
+type CachedComputerUseResult = ComputerUseResult & {
+  cachedAt: number;
+};
+
 const blockedCacheTtlMs = 60_000;
 const geminiCache = new Map<string, CachedGeminiResult>();
+const computerAuditCache = new Map<string, CachedComputerUseResult>();
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -45,7 +70,7 @@ export default defineConfig(({ mode }) => {
               ok: Boolean(geminiApiKey),
               status: geminiApiKey ? 'configured' : 'blocked',
               model: 'gemini-3.5-flash',
-              cacheEntries: geminiCache.size,
+              cacheEntries: geminiCache.size + computerAuditCache.size,
               liveCallRequired: false,
             });
           });
@@ -66,6 +91,10 @@ export default defineConfig(({ mode }) => {
               buildPrompt: buildCritiquePrompt,
               responseSchema: critiqueSchema,
             });
+          });
+
+          server.middlewares.use('/api/gemini/computer-audit', async (req, res) => {
+            await handleComputerAudit(req, res, geminiApiKey);
           });
         },
       },
@@ -113,6 +142,43 @@ async function handleGeminiInteraction(
       ok: false,
       status: 'blocked',
       error: error instanceof Error ? error.message : 'Unknown Gemini middleware error',
+    });
+  }
+}
+
+async function handleComputerAudit(req: any, res: any, geminiApiKey?: string) {
+  if (req.method !== 'POST') {
+    sendJson(res, 405, { ok: false, status: 'blocked', error: 'POST required' });
+    return;
+  }
+
+  if (!geminiApiKey) {
+    sendJson(res, 503, { ok: false, status: 'blocked', error: 'Missing GEMINI_API_KEY' });
+    return;
+  }
+
+  try {
+    const body = await readJsonBody(req);
+    const prompt = buildComputerAuditPrompt(body);
+    const screenshotBase64 = typeof body.screenshotBase64 === 'string' ? body.screenshotBase64 : '';
+
+    if (!screenshotBase64) {
+      sendJson(res, 400, { ok: false, status: 'blocked', error: 'Missing audit screenshotBase64' });
+      return;
+    }
+
+    const result = await requestGeminiComputerAudit({
+      apiKey: geminiApiKey,
+      prompt,
+      screenshotBase64,
+    });
+
+    sendJson(res, result.ok ? 200 : 502, result);
+  } catch (error) {
+    sendJson(res, 500, {
+      ok: false,
+      status: 'blocked',
+      error: error instanceof Error ? error.message : 'Unknown Gemini computer-use audit error',
     });
   }
 }
@@ -179,6 +245,71 @@ async function requestGeminiInteraction(options: {
   return result;
 }
 
+async function requestGeminiComputerAudit(options: {
+  apiKey: string;
+  prompt: string;
+  screenshotBase64: string;
+}): Promise<ComputerUseResult> {
+  const cacheKey = `computer-audit:${hashPrompt(`${options.prompt}:${options.screenshotBase64.slice(0, 4000)}`)}`;
+  const cached = computerAuditCache.get(cacheKey);
+
+  if (cached && (cached.ok || Date.now() - cached.cachedAt < blockedCacheTtlMs)) {
+    const { cachedAt: _cachedAt, ...cachedResult } = cached;
+
+    return {
+      ...cachedResult,
+      latencyMs: 0,
+      cacheHit: true,
+    };
+  }
+
+  const startedAt = Date.now();
+  const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': options.apiKey,
+    },
+    body: JSON.stringify({
+      model: 'gemini-3.5-flash',
+      store: false,
+      tools: [
+        {
+          type: 'computer_use',
+          environment: 'browser',
+        },
+      ],
+      input: [
+        {
+          type: 'text',
+          text: options.prompt,
+        },
+        {
+          type: 'image',
+          mime_type: 'image/png',
+          data: options.screenshotBase64,
+        },
+      ],
+    }),
+  });
+  const responseJson = (await geminiResponse.json()) as any;
+  const result: ComputerUseResult = {
+    ok: geminiResponse.ok,
+    status: geminiResponse.ok ? 'live' : 'blocked',
+    model: responseJson.model ?? 'gemini-3.5-flash',
+    latencyMs: Date.now() - startedAt,
+    promptPreview: options.prompt.slice(0, 1200),
+    outputText: extractModelOutputText(responseJson),
+    actions: extractComputerUseActions(responseJson),
+    cacheHit: false,
+    error: geminiResponse.ok ? undefined : extractGeminiError(responseJson, geminiResponse.status),
+  };
+
+  computerAuditCache.set(cacheKey, { ...result, cachedAt: Date.now() });
+
+  return result;
+}
+
 function readJsonBody(req: any): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -197,6 +328,22 @@ function readJsonBody(req: any): Promise<Record<string, unknown>> {
 
     req.on('error', reject);
   });
+}
+
+function buildComputerAuditPrompt(body: Record<string, unknown>): string {
+  return `You are Gemini 3.5 Flash using the computer_use browser tool as a QA auditor for OrbitForge.
+
+You are looking at a generated PNG audit frame representing the current seeded app state.
+
+Do not execute actions. Propose the next one or two browser actions a judge-readiness agent should take.
+Prioritize finding broken demo flow, missing trace proof, hidden fallback state, or confusing promotion claims.
+Treat all telemetry as seeded simulation data and do not claim real satellite control.
+
+Task:
+${typeof body.task === 'string' ? body.task : 'Audit the OrbitForge demo state.'}
+
+Screen text:
+${typeof body.screenText === 'string' ? body.screenText.slice(0, 4000) : 'No screen text provided.'}`;
 }
 
 function buildOperatorPrompt(body: Record<string, unknown>): string {
@@ -240,6 +387,29 @@ function extractModelOutputText(responseJson: any): string {
   const textPart = modelOutput?.content?.find((part: any) => typeof part.text === 'string');
 
   return textPart?.text ?? '';
+}
+
+function extractComputerUseActions(responseJson: any): ComputerUseAction[] {
+  const steps = Array.isArray(responseJson.steps) ? responseJson.steps : [];
+
+  return steps
+    .filter((step: any) => step.type === 'function_call')
+    .map((step: any) => {
+      const args = step.arguments ?? step.args ?? {};
+
+      return {
+        name: typeof step.name === 'string' ? step.name : typeof step.function_name === 'string' ? step.function_name : 'computer_use',
+        intent: typeof args.intent === 'string' ? args.intent : typeof args.description === 'string' ? args.description : 'Gemini proposed a computer-use action.',
+        x: typeof args.x === 'number' ? args.x : undefined,
+        y: typeof args.y === 'number' ? args.y : undefined,
+        safetyDecision:
+          typeof step.safety_decision === 'string'
+            ? step.safety_decision
+            : typeof step.safetyDecision === 'string'
+              ? step.safetyDecision
+              : undefined,
+      };
+    });
 }
 
 function extractGeminiError(responseJson: any, status: number): string {
