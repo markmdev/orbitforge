@@ -11,7 +11,7 @@ Last updated: 2026-06-27
 | Scenario | Run wildfire scenario | Active scenario, seeded telemetry, and workload appear |
 | Gemini plan | Generate plan | Plan appears with placement, reasoning, risk, confidence |
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
-| Improvement | Run improvement pass | Candidate policy, diff, A/B result, and promotion gate appear |
+| Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Promotion | Promote candidate | Version changes and score trend updates |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
@@ -30,6 +30,8 @@ Current browser proof surfaces:
   prompt/output previews and label live/fallback state.
 - Evaluation: guardrail canary is visible and blocks unsafe overclaiming
   mutation with deterministic evaluator proof.
+- Policy Lab: learning-memory write is visible and ties current scenario,
+  failure signature, golden sweep, and guardrail canary hold together.
 - Computer-use audit: Trace and judge report surface propose-only mode,
   prompt-injection guard state, and exact quota blocker when quota blocks live
   output.

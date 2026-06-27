@@ -19,9 +19,11 @@ repeated simulated incidents.
 6. Show the improvement pass.
 7. Show Gemini's critique and the app-generated policy mutation.
 8. Show A/B score improvement and policy diff.
-9. Show the deterministic promotion gate and score delta.
-10. Show the guardrail canary rejecting an unsafe overclaiming mutation.
-11. Show Gemini computer-use audit result, including propose-only mode and
+9. Show the learning-memory writeback from failure signature to candidate
+   patch.
+10. Show the deterministic promotion gate and score delta.
+11. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+12. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
 
 Closing line:
@@ -75,6 +77,8 @@ Run improvement pass:
 - Gemini diagnoses the failure;
 - the in-app Gemini improvement service creates a candidate policy;
 - old and new policy run against the same scenarios;
+- Policy Lab records a seeded learning-memory write from failure signature to
+  candidate patch;
 - promotion gate checks score and guardrails.
 
 Show diff and score delta.
@@ -136,6 +140,8 @@ Latest rehearsal proof:
 - Evaluation showed `Guardrail canary held` and blocked the unsafe overclaiming
   canary at guardrail score 25.
 - Policy Lab showed candidate patch, `+11`, and `Average sweep +10`.
+- Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
+  `contact:64`, golden sweep `+10`, and guardrail canary hold.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only` and `Prompt guardenabled`.
 - Copy report included `Computer-use mode: propose-only`,
