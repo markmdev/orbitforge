@@ -379,10 +379,13 @@ export function App() {
                 Gemini trace status
               </div>
               <div className="trace-list compact">
-                {runtimeTraceEvents.slice(0, 4).map((event) => (
+                {runtimeTraceEvents.map((event) => (
                   <div className="trace-row" key={event.id}>
                     <span>{event.label}</span>
-                    <strong>{event.status}</strong>
+                    <div className="trace-row-meta">
+                      <strong className={`event-status ${event.status}`}>{event.status}</strong>
+                      <span className={`source-pill ${event.source}`}>{event.source}</span>
+                    </div>
                   </div>
                 ))}
               </div>

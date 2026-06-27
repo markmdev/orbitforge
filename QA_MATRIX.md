@@ -21,9 +21,9 @@ Last updated: 2026-06-27
 
 Current browser proof surfaces:
 
-- In-app browser, desktop `1440x900`: Console shows active incident, fleet
-  health, improvement proof, Gemini trace status, and ground contact strip
-  without overlap.
+- In-app browser, desktop `1280x720`: Console shows active incident, fleet
+  health, improvement proof, full five-row runtime flight recorder including
+  computer-use audit status/source, and ground contact strip without overlap.
 - In-app browser, mobile `390x844`: Console and active incident are visible in
   the first viewport; mobile nav is compact.
 - Gemini Trace: plan, critique, and computer-use audit panels preserve
