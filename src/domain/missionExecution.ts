@@ -9,6 +9,16 @@ export type MissionExecutionStep = {
   status: 'complete' | 'blocked';
 };
 
+export type DataProductManifestItem = {
+  id: string;
+  region: string;
+  sizeGb: number;
+  freshnessMinute: number;
+  confidenceScore: number;
+  validation: 'verified' | 'held';
+  watermark: 'attached' | 'pending';
+};
+
 export type MissionExecution = {
   scenarioId: string;
   policyId: string;
@@ -24,6 +34,8 @@ export type MissionExecution = {
   freshnessStatus: 'met' | 'late';
   readinessBonusMinutes: number;
   risks: string[];
+  manifest: DataProductManifestItem[];
+  manifestStatus: 'verified' | 'held';
   steps: MissionExecutionStep[];
 };
 
@@ -41,6 +53,8 @@ export function buildMissionExecution(
   const deliveredFreshnessMinutes = Math.max(4, plan.expectedFreshnessMinutes - readinessBonusMinutes);
   const freshnessStatus = deliveredFreshnessMinutes <= scenario.freshnessMinutes ? 'met' : 'late';
   const dataProductName = buildDataProductName(scenario);
+  const manifest = buildManifestItems(scenario, deliveredFreshnessMinutes, freshnessStatus, readinessScore);
+  const manifestStatus = manifest.every((item) => item.validation === 'verified') ? 'verified' : 'held';
   const latestContactMinute = Math.max(2, deliveredFreshnessMinutes - 2);
   const stationMinute = Math.max(
     2,
@@ -63,6 +77,8 @@ export function buildMissionExecution(
     freshnessStatus,
     readinessBonusMinutes,
     risks: plan.risks,
+    manifest,
+    manifestStatus,
     steps: [
       {
         id: 'ingest',
@@ -97,6 +113,56 @@ export function buildMissionExecution(
       },
     ],
   };
+}
+
+function buildManifestItems(
+  scenario: Scenario,
+  deliveredFreshnessMinutes: number,
+  freshnessStatus: MissionExecution['freshnessStatus'],
+  readinessScore: number,
+): DataProductManifestItem[] {
+  const regions = getManifestRegions(scenario);
+  const sizes = splitProductGb(scenario.targetGb, regions.length);
+  const watermark: DataProductManifestItem['watermark'] = readinessScore >= 64 ? 'attached' : 'pending';
+
+  return regions.map((region, index) => {
+    const confidenceScore = Math.max(64, Math.min(98, Math.round(78 + readinessScore / 5 - index * 2)));
+    const validation: DataProductManifestItem['validation'] =
+      freshnessStatus === 'met' && confidenceScore >= 80 && watermark === 'attached' ? 'verified' : 'held';
+
+    return {
+      id: `${scenario.id.toUpperCase().replace(/[^A-Z0-9]/g, '-')}-${String(index + 1).padStart(2, '0')}`,
+      region,
+      sizeGb: sizes[index] ?? 0,
+      freshnessMinute: Math.max(1, deliveredFreshnessMinutes - (regions.length - index - 1)),
+      confidenceScore,
+      validation,
+      watermark,
+    };
+  });
+}
+
+function getManifestRegions(scenario: Scenario): string[] {
+  if (scenario.id.includes('wildfire')) {
+    return ['North ridge', 'West flank', 'Evacuation corridor', 'Ignition perimeter'];
+  }
+
+  if (scenario.id.includes('radiation')) {
+    return ['ECC anomaly window', 'Validation rerun', 'Confidence delta'];
+  }
+
+  if (scenario.id.includes('climate')) {
+    return ['Feature shard A', 'Feature shard B', 'Aggregation index'];
+  }
+
+  return ['Product chunk A', 'Product chunk B', 'Product chunk C'];
+}
+
+function splitProductGb(targetGb: number, count: number): number[] {
+  const base = Math.floor(targetGb / count);
+  const remainder = targetGb - base * count;
+
+  return Array.from({ length: count }, (_, index) => base + (index < remainder ? 1 : 0));
 }
 
 function getReadinessBonusMinutes(readinessScore: number): number {

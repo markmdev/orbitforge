@@ -477,6 +477,11 @@ export function App() {
       missionStationName: missionExecution?.stationName,
       missionPlacement: missionExecution?.placement,
       missionReadinessBonusMinutes: missionExecution?.readinessBonusMinutes,
+      manifestStatus: missionExecution?.manifestStatus,
+      manifestVerifiedCount: missionExecution?.manifest.filter((item) => item.validation === 'verified').length,
+      manifestItemCount: missionExecution?.manifest.length,
+      manifestTotalGb: missionExecution?.manifest.reduce((sum, item) => sum + item.sizeGb, 0),
+      manifestWatermarkStatus: getManifestWatermarkStatus(missionExecution),
     });
     setJudgeReport(report);
 
@@ -822,18 +827,43 @@ export function App() {
                 </span>
               </div>
               {missionExecution ? (
-                <div className="timeline-list">
-                  {missionExecution.steps.map((step) => (
-                    <article className="timeline-step" key={step.id}>
-                      <span className="timeline-minute">T+{step.minute}m</span>
-                      <div>
-                        <strong>{step.label}</strong>
-                        <span>{step.detail}</span>
-                      </div>
-                      <strong className={`event-status ${step.status}`}>{step.status}</strong>
-                    </article>
-                  ))}
-                </div>
+                <>
+                  <div className="timeline-list">
+                    {missionExecution.steps.map((step) => (
+                      <article className="timeline-step" key={step.id}>
+                        <span className="timeline-minute">T+{step.minute}m</span>
+                        <div>
+                          <strong>{step.label}</strong>
+                          <span>{step.detail}</span>
+                        </div>
+                        <strong className={`event-status ${step.status}`}>{step.status}</strong>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="manifest-list">
+                    <div className="manifest-header">
+                      <strong>Data product manifest</strong>
+                      <span>
+                        {missionExecution.manifest.filter((item) => item.validation === 'verified').length}/{missionExecution.manifest.length}{' '}
+                        verified / {missionExecution.targetGb} GB / watermark {getManifestWatermarkStatus(missionExecution)}
+                      </span>
+                    </div>
+                    {missionExecution.manifest.map((item) => (
+                      <article className="manifest-row" key={item.id}>
+                        <code>{item.id}</code>
+                        <div>
+                          <strong>{item.region}</strong>
+                          <span>
+                            {item.sizeGb} GB / T+{item.freshnessMinute}m / confidence {item.confidenceScore}%
+                          </span>
+                        </div>
+                        <span className={`event-status ${item.validation === 'verified' ? 'complete' : 'blocked'}`}>
+                          {item.validation}
+                        </span>
+                      </article>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="delta-banner">
                   Run the active policy to produce a seeded timeline, data product, freshness result, and report evidence.
@@ -1313,6 +1343,16 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function signedDelta(value: number): string {
   return `${value > 0 ? '+' : ''}${value}`;
+}
+
+function getManifestWatermarkStatus(execution?: MissionExecution | null): 'attached' | 'pending' | 'mixed' | undefined {
+  if (!execution) {
+    return undefined;
+  }
+
+  const watermarkStates = new Set(execution.manifest.map((item) => item.watermark));
+
+  return watermarkStates.size === 1 ? execution.manifest[0]?.watermark : 'mixed';
 }
 
 function getGeminiTraceDetail(trace: GeminiPlanTrace): string {

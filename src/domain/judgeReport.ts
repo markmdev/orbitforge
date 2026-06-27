@@ -28,6 +28,11 @@ export type JudgeReportInput = {
   missionStationName?: string;
   missionPlacement?: string;
   missionReadinessBonusMinutes?: number;
+  manifestStatus?: 'verified' | 'held';
+  manifestVerifiedCount?: number;
+  manifestItemCount?: number;
+  manifestTotalGb?: number;
+  manifestWatermarkStatus?: 'attached' | 'pending' | 'mixed';
 };
 
 export function buildJudgeReport(input: JudgeReportInput): string {
@@ -52,6 +57,7 @@ export function buildJudgeReport(input: JudgeReportInput): string {
     `Incident readiness: ${formatIncidentReadiness(input.incidentReadinessScore, input.incidentReadinessLabel)}`,
     `Commands applied: ${formatCommandLabels(input.appliedCommandLabels)}`,
     `Mission execution: ${formatMissionExecution(input)}`,
+    `Data product manifest: ${formatManifest(input)}`,
     `Average sweep delta: ${signedDelta(input.averageDelta)}`,
     `Promotion gate: ${input.promoted ? 'accepted' : 'held'}`,
     '',
@@ -100,6 +106,18 @@ function formatCommandLabels(labels?: string[]): string {
   }
 
   return labels.join(', ');
+}
+
+function formatManifest(input: JudgeReportInput): string {
+  if (!input.manifestStatus || input.missionStatus === 'not_run') {
+    return 'not generated';
+  }
+
+  const verified = `${input.manifestVerifiedCount ?? 0}/${input.manifestItemCount ?? 0} chunks ${input.manifestStatus}`;
+  const size = typeof input.manifestTotalGb === 'number' ? `; ${input.manifestTotalGb} GB` : '';
+  const watermark = input.manifestWatermarkStatus ? `; watermark ${input.manifestWatermarkStatus}` : '';
+
+  return `${verified}${size}${watermark}`;
 }
 
 function formatRuntimeHealth(status?: string, error?: string, cacheEntries?: number): string {

@@ -15,7 +15,7 @@ Last updated: 2026-06-27
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion without leaking across scenarios |
-| Mission execution | Run mission plan | Timeline steps, selected node/station, data product, freshness result, and operations log appear |
+| Mission execution | Run mission plan | Timeline steps, selected node/station, data product, manifest chunks, freshness result, and operations log appear |
 | Work queue | Complete demo actions | Readiness moves from `1/7` to `7/7`; unfinished rows expose contextual actions or clear gates |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Runtime health | Open Console | Gemini runtime health strip shows configured/blocked state from `/api/gemini/health` |
@@ -67,8 +67,9 @@ Current browser proof surfaces:
   operations log, and `Reset demo` restores baseline state.
 - Mission execution: Console `Run mission plan` creates a four-step timeline,
   selects `Kepler-2 -> New Mexico RF/Optical Hybrid`, delivers `Fireline SAR
-  tiles` at `T+14m met`, records `Mission plan run`, and exports mission state
-  in the judge report.
+  tiles` at `T+14m met`, shows a 4/4 verified 26 GB manifest with watermark
+  attached, records `Mission plan run`, and exports mission state in the judge
+  report.
 - Incident work queue: starts at `1/7`, moves to `2/7` after incident
   stabilization, `3/7` after improvement pass, `4/7` after promotion, `5/7`
   after mission execution, `6/7` after audit fallback/live result, `7/7` after

@@ -114,6 +114,8 @@ Click `Promote candidate`, then show the Console:
 - use the queue action rail to click `Run mission`;
 - timeline shows `Fireline SAR tiles`, `Kepler-2 -> New Mexico RF/Optical
   Hybrid`, and freshness `T+14m met`;
+- manifest shows 4/4 verified chunks, 26 GB, confidence scores, and watermark
+  attached;
 - operations log records `Mission plan run`;
 - incident work queue moves from `1/7` to `2/7` after command stabilization,
   then to `3/7` after improvement pass, `4/7` after promotion, `5/7` after
@@ -211,8 +213,8 @@ Latest rehearsal proof:
   `v1 generated thermal-contact candidate`, updated active score from `70` to
   `85`, and wrote `Candidate promoted` to the operations log.
 - Console `Run mission plan` produced `Fireline SAR tiles`, `Kepler-2 -> New
-  Mexico RF/Optical Hybrid`, freshness `T+14m met`, a four-step timeline, and a
-  `Mission plan run` log entry.
+  Mexico RF/Optical Hybrid`, freshness `T+14m met`, a four-step timeline, a 4/4
+  verified manifest totaling 26 GB, and a `Mission plan run` log entry.
 - Incident work queue moved from `1/7` to `7/7` as command stabilization,
   improvement pass, promotion, mission execution, audit result, and report
   export completed; unfinished rows exposed direct action buttons or short gate

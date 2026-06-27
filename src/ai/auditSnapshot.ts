@@ -63,6 +63,7 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Incident: ${input.scenario.incident}`,
     `Policy: ${input.policy.name}`,
     `Mission execution: ${formatMissionExecution(input.missionExecution)}`,
+    `Data product manifest: ${formatManifest(input.missionExecution)}`,
     `Baseline score: ${primaryResult.baselineScore.total}`,
     `Candidate score: ${input.improvementStaged ? primaryResult.candidateScore.total : 'not staged'}`,
     `Active delta: ${input.improvementStaged ? primaryResult.decision.delta : '--'}`,
@@ -75,6 +76,18 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Critique fallback/error: ${input.critiqueTrace.error ?? 'none'}`,
     'Expected audit: identify the next UI click or inspection a judge/demo QA agent should perform.',
   ];
+}
+
+function formatManifest(execution?: MissionExecution | null): string {
+  if (!execution) {
+    return 'not generated';
+  }
+
+  const verifiedCount = execution.manifest.filter((item) => item.validation === 'verified').length;
+  const watermarkStates = new Set(execution.manifest.map((item) => item.watermark));
+  const watermark = watermarkStates.size === 1 ? execution.manifest[0]?.watermark : 'mixed';
+
+  return `${verifiedCount}/${execution.manifest.length} chunks ${execution.manifestStatus}; ${execution.targetGb} GB; watermark ${watermark}`;
 }
 
 function formatMissionExecution(execution?: MissionExecution | null): string {

@@ -31,6 +31,11 @@ describe('judge report', () => {
       missionStationName: 'New Mexico RF/Optical Hybrid',
       missionPlacement: 'split',
       missionReadinessBonusMinutes: 7,
+      manifestStatus: 'verified',
+      manifestVerifiedCount: 4,
+      manifestItemCount: 4,
+      manifestTotalGb: 26,
+      manifestWatermarkStatus: 'attached',
     });
 
     expect(report).toContain('Scenario: Wildfire SAR Rapid Response');
@@ -39,6 +44,7 @@ describe('judge report', () => {
     expect(report).toContain('Commands applied: Reroute to Svalbard relay');
     expect(report).toContain('Runtime health: configured; cache entries 2');
     expect(report).toContain('Mission execution: Fireline SAR tiles met at T+14m via Kepler-2 -> New Mexico RF/Optical Hybrid (split); readiness bonus 7m');
+    expect(report).toContain('Data product manifest: 4/4 chunks verified; 26 GB; watermark attached');
     expect(report).toContain('Average sweep delta: +10');
     expect(report).toContain('Promotion gate: accepted');
     expect(report).toContain('Operator plan: fallback (You do not have enough quota to make this request.)');
@@ -75,6 +81,7 @@ describe('judge report', () => {
     expect(report).toContain('Candidate policy: not staged');
     expect(report).toContain('Candidate score: not staged');
     expect(report).toContain('Mission execution: not run');
+    expect(report).toContain('Data product manifest: not generated');
     expect(report).toContain('Promotion gate: held');
   });
 });

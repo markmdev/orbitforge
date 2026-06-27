@@ -413,7 +413,8 @@ h3 {
 .scenario-table,
 .activity-list,
 .work-queue-list,
-.timeline-list {
+.timeline-list,
+.manifest-list {
   display: grid;
   gap: 10px;
 }
@@ -426,6 +427,7 @@ h3 {
 .activity-row,
 .work-item,
 .timeline-step,
+.manifest-row,
 .ground-strip article {
   display: flex;
   justify-content: space-between;
@@ -462,23 +464,46 @@ h3 {
 
 .activity-row span:not(.source-pill),
 .work-item span,
-.timeline-step span {
+.timeline-step span,
+.manifest-row span {
   color: var(--muted);
   font-size: 0.88rem;
 }
 
-.timeline-list {
+.timeline-list,
+.manifest-list {
   margin-top: 14px;
 }
 
-.timeline-step {
+.timeline-step,
+.manifest-row {
   align-items: flex-start;
 }
 
-.timeline-step div {
+.timeline-step div,
+.manifest-row div {
   display: grid;
   gap: 4px;
   min-width: 0;
+}
+
+.manifest-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.manifest-header strong,
+.manifest-row code {
+  color: var(--text);
+}
+
+.manifest-row code {
+  min-width: 138px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .work-item-controls {
@@ -901,6 +926,7 @@ h3 {
   .activity-row,
   .work-item,
   .timeline-step,
+  .manifest-row,
   .scenario-row,
   .score-sweep-row,
   .ground-strip article,
@@ -912,6 +938,10 @@ h3 {
   .work-item-controls {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .manifest-header {
+    display: grid;
   }
 
   .nav-list {

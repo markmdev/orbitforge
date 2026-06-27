@@ -29,6 +29,8 @@ fleet:
   scenario library.
 - seeded mission execution timeline that turns the active policy into node,
   station, freshness, and data-product handoff evidence.
+- delivered data-product manifest with chunk sizes, confidence, watermark, and
+  validation status.
 
 ### R2 - Scenario Runner
 
@@ -160,8 +162,8 @@ The MVP is ready when a judge can watch one complete loop:
 7. run a Gemini-powered improvement pass;
 8. compare old/new policy results;
 9. see a promoted policy version with score improvement and trace evidence;
-10. run a seeded mission execution timeline and see data-product handoff
-    evidence;
+10. run a seeded mission execution timeline and see data-product handoff plus
+    manifest validation evidence;
 11. see Gemini computer-use audit evidence or a clearly marked unavailable
    integration fallback panel if API access fails during the hackathon.
 
