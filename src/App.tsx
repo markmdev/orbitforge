@@ -22,6 +22,7 @@ import { OrbitMap } from './components/OrbitMap';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
 import { decidePromotion, evaluatePlan } from './domain/evaluator';
 import { runImprovementCycle } from './domain/improvement';
+import { buildJudgeReport, formatAuditMode, formatPromptGuard } from './domain/judgeReport';
 import { runPolicyOnScenario } from './domain/scenarioRunner';
 import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
 
@@ -767,62 +768,4 @@ function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace | GeminiComp
   }
 
   return trace.latencyMs ? `${trace.latencyMs} ms` : '--';
-}
-
-function formatAuditMode(mode?: string): string {
-  return mode === 'propose_only' ? 'propose-only' : '--';
-}
-
-function formatPromptGuard(enabled?: boolean): string {
-  return enabled ? 'enabled' : '--';
-}
-
-function buildJudgeReport(input: {
-  activeScenarioName: string;
-  baselineScore: number;
-  candidatePolicyName: string;
-  candidateScore: number;
-  averageDelta: number;
-  promoted: boolean;
-  planStatus: string;
-  planError?: string;
-  critiqueStatus: string;
-  critiqueError?: string;
-  auditStatus: string;
-  auditError?: string;
-  auditExecutionMode?: string;
-  auditPromptInjectionDetection?: boolean;
-}): string {
-  const auditMetadata: string[] = [];
-
-  if (input.auditExecutionMode) {
-    auditMetadata.push(`- Computer-use mode: ${formatAuditMode(input.auditExecutionMode)}`);
-  }
-
-  if (typeof input.auditPromptInjectionDetection === 'boolean') {
-    auditMetadata.push(`- Prompt-injection guard: ${formatPromptGuard(input.auditPromptInjectionDetection)}`);
-  }
-
-  return [
-    'OrbitForge Judge Report',
-    '',
-    `Scenario: ${input.activeScenarioName}`,
-    `Baseline score: ${input.baselineScore}`,
-    `Candidate policy: ${input.candidatePolicyName}`,
-    `Candidate score: ${input.candidateScore}`,
-    `Average sweep delta: ${signedDelta(input.averageDelta)}`,
-    `Promotion gate: ${input.promoted ? 'accepted' : 'held'}`,
-    '',
-    'Gemini surfaces:',
-    `- Operator plan: ${formatReportStatus(input.planStatus, input.planError)}`,
-    `- Improvement critique: ${formatReportStatus(input.critiqueStatus, input.critiqueError)}`,
-    `- Computer-use audit: ${formatReportStatus(input.auditStatus, input.auditError)}`,
-    ...auditMetadata,
-    '',
-    'Guardrail: all telemetry is seeded simulation data; OrbitForge does not claim real satellite control.',
-  ].join('\n');
-}
-
-function formatReportStatus(status: string, error?: string): string {
-  return error ? `${status} (${error})` : status;
 }
