@@ -48,6 +48,13 @@ describe('deterministic evaluator', () => {
       id: 'unsafe-policy',
       guardrails: [],
     };
+    const baselineScore = evaluatePlan(
+      scenario,
+      policyVersions[0],
+      runPolicyOnScenario(scenario, policyVersions[0], orbitalNodes, groundStations),
+      orbitalNodes,
+      groundStations,
+    );
     const score = evaluatePlan(
       scenario,
       unsafePolicy,
@@ -55,8 +62,11 @@ describe('deterministic evaluator', () => {
       orbitalNodes,
       groundStations,
     );
+    const decision = decidePromotion(baselineScore, score);
 
     expect(score.guardrailPassed).toBe(false);
     expect(score.dimensions.guardrail).toBeLessThan(90);
+    expect(decision.promoted).toBe(false);
+    expect(decision.reasons).toContain('Candidate failed the no-overclaiming guardrail.');
   });
 });

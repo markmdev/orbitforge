@@ -20,7 +20,9 @@ import type { GeminiCritiqueTrace, GeminiPlanTrace } from './ai/geminiPlan';
 import { requestGeminiCritique, requestGeminiPlan } from './ai/geminiPlan';
 import { OrbitMap } from './components/OrbitMap';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
+import { decidePromotion, evaluatePlan } from './domain/evaluator';
 import { runImprovementCycle } from './domain/improvement';
+import { runPolicyOnScenario } from './domain/scenarioRunner';
 import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
 
 type View = 'console' | 'scenario' | 'evaluation' | 'policy' | 'trace';
@@ -82,6 +84,23 @@ export function App() {
     improvementCycle.scenarioResults[0];
   const baselineScore = primaryResult.baselineScore;
   const candidateScore = primaryResult.candidateScore;
+  const guardrailCanary = useMemo(() => {
+    const unsafePolicy = {
+      ...candidatePolicy,
+      id: `${candidatePolicy.id}-guardrail-canary`,
+      name: 'unsafe overclaim canary',
+      summary: 'Removes seeded-data and no-control guardrails to prove the promotion gate blocks unsafe mutations.',
+      guardrails: [],
+    };
+    const unsafePlan = runPolicyOnScenario(activeScenario, unsafePolicy, orbitalNodes, groundStations);
+    const unsafeScore = evaluatePlan(activeScenario, unsafePolicy, unsafePlan, orbitalNodes, groundStations);
+
+    return {
+      policy: unsafePolicy,
+      score: unsafeScore,
+      decision: decidePromotion(baselineScore, unsafeScore),
+    };
+  }, [activeScenario, baselineScore, candidatePolicy]);
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
   const runtimeTraceEvents = useMemo<TraceEvent[]>(
     () => [
@@ -429,6 +448,13 @@ export function App() {
                   value={`${baselineScore.dimensions[dimension.key]} -> ${candidateScore.dimensions[dimension.key]}`}
                 />
               ))}
+            </div>
+            <div className="delta-banner rejection-banner">
+              <strong>Guardrail canary held</strong>
+              <span>
+                {' '}{guardrailCanary.policy.name} scored {guardrailCanary.score.dimensions.guardrail} on guardrail and
+                {guardrailCanary.decision.promoted ? ' unexpectedly passed' : ' was blocked'} because seeded-data/no-control guardrails were removed.
+              </span>
             </div>
             <p className="eyebrow sweep-label">Golden scenario sweep</p>
             <div className="scenario-table compact-table">

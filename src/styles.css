@@ -291,6 +291,16 @@ h3 {
   background: rgba(240, 185, 78, 0.1);
 }
 
+.rejection-banner {
+  border-left-color: var(--red);
+  color: #f5c5bf;
+  background: rgba(239, 127, 114, 0.1);
+}
+
+.rejection-banner strong {
+  color: var(--text);
+}
+
 .orbit-map {
   margin: 14px 0 0;
   padding: 10px;
