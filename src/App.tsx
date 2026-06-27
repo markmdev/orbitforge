@@ -134,6 +134,8 @@ export function App() {
       critiqueError: geminiCritiqueTrace.error,
       auditStatus: computerAuditTrace.status,
       auditError: computerAuditTrace.error,
+      auditExecutionMode: computerAuditTrace.executionMode,
+      auditPromptInjectionDetection: computerAuditTrace.promptInjectionDetection,
     });
     setJudgeReport(report);
 
@@ -748,7 +750,19 @@ function buildJudgeReport(input: {
   critiqueError?: string;
   auditStatus: string;
   auditError?: string;
+  auditExecutionMode?: string;
+  auditPromptInjectionDetection?: boolean;
 }): string {
+  const auditMetadata: string[] = [];
+
+  if (input.auditExecutionMode) {
+    auditMetadata.push(`- Computer-use mode: ${formatAuditMode(input.auditExecutionMode)}`);
+  }
+
+  if (typeof input.auditPromptInjectionDetection === 'boolean') {
+    auditMetadata.push(`- Prompt-injection guard: ${formatPromptGuard(input.auditPromptInjectionDetection)}`);
+  }
+
   return [
     'OrbitForge Judge Report',
     '',
@@ -763,6 +777,7 @@ function buildJudgeReport(input: {
     `- Operator plan: ${formatReportStatus(input.planStatus, input.planError)}`,
     `- Improvement critique: ${formatReportStatus(input.critiqueStatus, input.critiqueError)}`,
     `- Computer-use audit: ${formatReportStatus(input.auditStatus, input.auditError)}`,
+    ...auditMetadata,
     '',
     'Guardrail: all telemetry is seeded simulation data; OrbitForge does not claim real satellite control.',
   ].join('\n');
