@@ -177,7 +177,7 @@ function fallbackCritiqueTrace(
   request: GeminiCritiqueRequest,
   partial?: Partial<GeminiCritiqueTrace>,
 ): GeminiCritiqueTrace {
-  const failureAnalysis = extractFailureAnalysis(request.candidateScore);
+  const failureAnalysis = extractFailureAnalysis(request.baselineScore);
 
   return {
     status: 'fallback',
@@ -189,7 +189,7 @@ function fallbackCritiqueTrace(
     cacheHit: partial?.cacheHit,
     error,
     critique: {
-      summary: 'Fallback critique uses deterministic evaluator failures until live Gemini critique is available.',
+      summary: 'Fallback critique uses baseline deterministic evaluator failures until live Gemini critique is available.',
       failureAnalysis,
       proposedExperiment: 'Keep the thermal-contact candidate and run it against the full seeded scenario sweep.',
       expectedMetricMove: 'Expect thermal/contact dimensions to improve while guardrail stays flat or improves.',
