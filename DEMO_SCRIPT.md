@@ -20,7 +20,9 @@ repeated simulated incidents.
 7. Show Gemini's critique and the app-generated policy mutation.
 8. Show A/B score improvement and policy diff.
 9. Show the deterministic promotion gate and score delta.
-10. Show Gemini computer-use audit result.
+10. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+11. Show Gemini computer-use audit result, including propose-only mode and
+    prompt-injection guard state.
 
 Closing line:
 
@@ -62,6 +64,10 @@ Open scorecard:
 
 Highlight one failure.
 
+Also point to the guardrail canary: the unsafe overclaiming mutation removes
+seeded-data/no-control guardrails, scores 25 on guardrail, and is blocked by
+the deterministic promotion gate.
+
 ### 1:25 - 2:10: Improve
 
 Run improvement pass:
@@ -79,6 +85,8 @@ Show Gemini computer-use audit:
 
 - local audit-frame screenshot generated from current seeded app state;
 - Gemini 3.5 Flash computer-use tool path attempted;
+- computer-use actions remain propose-only and are not executed;
+- prompt-injection guard is enabled for the tool request;
 - proposed UI action or exact API/quota blocker shown;
 - result tied to judge-readiness QA.
 
@@ -114,13 +122,19 @@ Before handing the app to judges:
    `Baseline policy favors hot accelerator node and misses optical outage.`
 5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+11`,
    and `Average sweep +10`.
-6. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+6. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
+   blocked.
+7. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
    live/fallback status for each Gemini surface.
+8. Confirm the audit surface or judge report shows `propose-only` mode and
+   `Prompt-injection guard: enabled` after running audit.
 
 Latest rehearsal proof:
 
+- Evaluation showed `Guardrail canary held` and blocked the unsafe overclaiming
+  canary at guardrail score 25.
 - Policy Lab showed candidate patch, `+11`, and `Average sweep +10`.
 - Gemini Trace showed operator plan, improvement critique, computer-use audit,
-  and quota/fallback story.
+  prompt guard/propose-only metadata, and quota/fallback story.
 - Reset returned to Console with wildfire baseline.
 - Browser warnings/errors were empty.

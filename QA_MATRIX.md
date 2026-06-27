@@ -10,11 +10,11 @@ Last updated: 2026-06-27
 | Reset | Reset demo state | Known baseline scenario and policy return |
 | Scenario | Run wildfire scenario | Active scenario, seeded telemetry, and workload appear |
 | Gemini plan | Generate plan | Plan appears with placement, reasoning, risk, confidence |
-| Evaluation | Score plan | Deterministic scorecard appears with dimensions |
+| Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, and promotion gate appear |
 | Promotion | Promote candidate | Version changes and score trend updates |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
-| Audit | Run computer-use audit | Audit frame is generated; action proposals or exact blocker are visible |
+| Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
 | Honesty | Inspect copy | Seeded/simulated labels are visible |
 | Safety | Inspect controls | No real launch/command/uplink claims |
 | Responsiveness | Resize desktop/mobile | No text overlap or broken layout |
@@ -28,6 +28,11 @@ Current browser proof surfaces:
   the first viewport; mobile nav is compact.
 - Gemini Trace: plan, critique, and computer-use audit panels preserve
   prompt/output previews and label live/fallback state.
+- Evaluation: guardrail canary is visible and blocks unsafe overclaiming
+  mutation with deterministic evaluator proof.
+- Computer-use audit: Trace and judge report surface propose-only mode,
+  prompt-injection guard state, and exact quota blocker when quota blocks live
+  output.
 - Browser console warnings/errors should be empty after each QA pass.
 
 ## Product Depth QA
