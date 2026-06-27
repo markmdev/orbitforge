@@ -1,4 +1,5 @@
 import type { GeminiCritiqueTrace, GeminiPlanTrace } from './geminiPlan';
+import type { LearningMemoryEntry } from '../domain/learningMemory';
 import type { MissionExecution } from '../domain/missionExecution';
 import type { ImprovementCycle, PolicyVersion, Scenario } from '../domain/types';
 
@@ -9,6 +10,7 @@ export type AuditSnapshotInput = {
   improvementCycle: ImprovementCycle;
   improvementStaged: boolean;
   missionExecution?: MissionExecution | null;
+  learningMemory?: LearningMemoryEntry[];
   planTrace: GeminiPlanTrace;
   critiqueTrace: GeminiCritiqueTrace;
 };
@@ -62,6 +64,7 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Scenario: ${input.scenario.name}`,
     `Incident: ${input.scenario.incident}`,
     `Policy: ${input.policy.name}`,
+    `Learning memory: ${formatLearningMemory(input.learningMemory)}`,
     `Mission execution: ${formatMissionExecution(input.missionExecution)}`,
     `Data product manifest: ${formatManifest(input.missionExecution)}`,
     `Baseline score: ${primaryResult.baselineScore.total}`,
@@ -76,6 +79,16 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Critique fallback/error: ${input.critiqueTrace.error ?? 'none'}`,
     'Expected audit: identify the next UI click or inspection a judge/demo QA agent should perform.',
   ];
+}
+
+function formatLearningMemory(entries?: LearningMemoryEntry[]): string {
+  if (!entries || entries.length === 0) {
+    return 'none retained';
+  }
+
+  const latest = entries[0];
+
+  return `${entries.length} retained; latest ${latest.scenarioName} ${latest.failureSignature}; sweep ${latest.averageDelta}`;
 }
 
 function formatManifest(execution?: MissionExecution | null): string {

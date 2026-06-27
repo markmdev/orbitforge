@@ -46,6 +46,7 @@ export type GeminiPlanRequest = {
   baselinePolicy: unknown;
   baselineScore: unknown;
   mutation: unknown;
+  learningMemory?: unknown;
 };
 
 export type GeminiCritiqueRequest = {
@@ -57,6 +58,7 @@ export type GeminiCritiqueRequest = {
   mutation: unknown;
   scenarioResults: unknown;
   promotionDecision: unknown;
+  learningMemory?: unknown;
 };
 
 export async function requestGeminiPlan(request: GeminiPlanRequest): Promise<GeminiPlanTrace> {
@@ -156,7 +158,8 @@ function fallbackPlanTrace(
   partial?: Partial<GeminiPlanTrace>,
 ): GeminiPlanTrace {
   const scenario = extractScenarioContext(request.scenario);
-  const fallbackPlan = buildScenarioAwareFallbackPlan(scenario);
+  const learningMemory = extractLearningMemoryContext(request.learningMemory);
+  const fallbackPlan = buildScenarioAwareFallbackPlan(scenario, learningMemory);
 
   return {
     status: 'fallback',
@@ -182,6 +185,13 @@ type ScenarioContext = {
   radiationSensitivity: number | null;
 };
 
+type LearningMemoryContext = {
+  count: number;
+  latestScenarioName: string | null;
+  latestFailureSignature: string | null;
+  latestAverageDelta: number | null;
+};
+
 function extractScenarioContext(value: unknown): ScenarioContext {
   const scenario = value && typeof value === 'object' ? value as Record<string, unknown> : {};
 
@@ -197,11 +207,29 @@ function extractScenarioContext(value: unknown): ScenarioContext {
   };
 }
 
-function buildScenarioAwareFallbackPlan(scenario: ScenarioContext): GeminiOperatorPlan {
+function extractLearningMemoryContext(value: unknown): LearningMemoryContext {
+  const entries = Array.isArray(value) ? value : [];
+  const latest = entries.find((entry) => entry && typeof entry === 'object') as Record<string, unknown> | undefined;
+
+  return {
+    count: entries.length,
+    latestScenarioName: readStringOrNull(latest?.scenarioName),
+    latestFailureSignature: readStringOrNull(latest?.failureSignature),
+    latestAverageDelta: readNumber(latest?.averageDelta),
+  };
+}
+
+function buildScenarioAwareFallbackPlan(scenario: ScenarioContext, learningMemory: LearningMemoryContext): GeminiOperatorPlan {
   const name = scenario.name.toLowerCase();
   const incident = scenario.incident.toLowerCase();
   const workload = scenario.workload.toLowerCase();
   const constraints = ['seeded-data'];
+  const memoryConstraints = learningMemory.count > 0 ? ['learning-memory'] : [];
+  const memoryRisks = learningMemory.count > 0 ? ['seeded-learning-memory'] : [];
+  const memoryPatch =
+    learningMemory.count > 0
+      ? ` Reuse retained memory from ${learningMemory.latestScenarioName ?? 'prior scenario'} (${learningMemory.latestFailureSignature ?? 'failure signature unavailable'}, sweep ${learningMemory.latestAverageDelta ?? '--'}).`
+      : '';
 
   if ((scenario.deadlinePressure ?? 0) > 70 || scenario.freshnessMinutes !== null && scenario.freshnessMinutes <= 30) {
     constraints.push('freshness');
@@ -220,37 +248,41 @@ function buildScenarioAwareFallbackPlan(scenario: ScenarioContext): GeminiOperat
 
     return {
       placement: 'split',
-      rationale: `Fallback plan for ${scenario.name} keeps ${scenario.workload} in a validation-first split path, rerunning confidence-sensitive work away from the anomalous accelerator before releasing results.`,
-      constraintsUsed: Array.from(new Set([...constraints, 'confidence'])),
-      risks: ['live-gemini-unavailable', 'radiation-validation-needed', 'requires-manual-verification'],
+      rationale: `Fallback plan for ${scenario.name} keeps ${scenario.workload} in a validation-first split path, rerunning confidence-sensitive work away from the anomalous accelerator before releasing results.${memoryPatch}`,
+      constraintsUsed: Array.from(new Set([...constraints, 'confidence', ...memoryConstraints])),
+      risks: ['live-gemini-unavailable', 'radiation-validation-needed', 'requires-manual-verification', ...memoryRisks],
       confidence: 58,
-      recommendedPolicyPatch: 'Raise radiation and confidence weighting before accepting accelerator output under ECC anomalies.',
+      recommendedPolicyPatch: `Raise radiation and confidence weighting before accepting accelerator output under ECC anomalies.${memoryPatch}`,
     };
   }
 
   if (name.includes('climate') || workload.includes('climate') || (scenario.freshnessMinutes ?? 0) >= 240) {
     return {
       placement: 'earth_cloud',
-      rationale: `Fallback plan for ${scenario.name} treats ${scenario.workload} as non-urgent orbital preprocessing, preserving onboard thermal and storage margin while shifting aggregation to Earth cloud capacity.`,
-      constraintsUsed: Array.from(new Set([...constraints, 'storage', 'cost'])),
-      risks: ['live-gemini-unavailable', 'batch-latency-acceptable', 'requires-manual-verification'],
+      rationale: `Fallback plan for ${scenario.name} treats ${scenario.workload} as non-urgent orbital preprocessing, preserving onboard thermal and storage margin while shifting aggregation to Earth cloud capacity.${memoryPatch}`,
+      constraintsUsed: Array.from(new Set([...constraints, 'storage', 'cost', ...memoryConstraints])),
+      risks: ['live-gemini-unavailable', 'batch-latency-acceptable', 'requires-manual-verification', ...memoryRisks],
       confidence: 64,
-      recommendedPolicyPatch: 'Lower deadline urgency for long-window reprocessing and protect orbital compute for time-critical incidents.',
+      recommendedPolicyPatch: `Lower deadline urgency for long-window reprocessing and protect orbital compute for time-critical incidents.${memoryPatch}`,
     };
   }
 
   return {
     placement: 'split',
-    rationale: `Fallback plan for ${scenario.name} splits ${scenario.workload} so orbital preprocessing only runs where thermal and contact-window constraints fit the seeded incident: ${scenario.incident}.`,
-    constraintsUsed: Array.from(new Set([...constraints, 'freshness', 'thermal', 'contact'])),
-    risks: ['live-gemini-unavailable', 'requires-manual-verification'],
+    rationale: `Fallback plan for ${scenario.name} splits ${scenario.workload} so orbital preprocessing only runs where thermal and contact-window constraints fit the seeded incident: ${scenario.incident}.${memoryPatch}`,
+    constraintsUsed: Array.from(new Set([...constraints, 'freshness', 'thermal', 'contact', ...memoryConstraints])),
+    risks: ['live-gemini-unavailable', 'requires-manual-verification', ...memoryRisks],
     confidence: 62,
-    recommendedPolicyPatch: 'Raise thermal/contact weighting and keep seeded-data guardrails visible.',
+    recommendedPolicyPatch: `Raise thermal/contact weighting and keep seeded-data guardrails visible.${memoryPatch}`,
   };
 }
 
 function readString(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim() !== '' ? value : fallback;
+}
+
+function readStringOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
 function readNumber(value: unknown): number | null {
@@ -263,6 +295,21 @@ function fallbackCritiqueTrace(
   partial?: Partial<GeminiCritiqueTrace>,
 ): GeminiCritiqueTrace {
   const failureAnalysis = extractFailureAnalysis(request.baselineScore);
+  const learningMemory = extractLearningMemoryContext(request.learningMemory);
+  const memoryFailureAnalysis =
+    learningMemory.count > 0
+      ? [
+          `Retained learning memory: ${learningMemory.latestFailureSignature ?? 'failure signature unavailable'} on ${learningMemory.latestScenarioName ?? 'prior scenario'} with sweep ${learningMemory.latestAverageDelta ?? '--'}.`,
+        ]
+      : [];
+  const memoryExperiment =
+    learningMemory.count > 0
+      ? ' Replay the retained learning-memory signature before changing the policy patch.'
+      : '';
+  const memoryJudgeNote =
+    learningMemory.count > 0
+      ? ' The fallback critique explicitly reuses retained learning memory while labeling live Gemini as unavailable.'
+      : '';
 
   return {
     status: 'fallback',
@@ -275,12 +322,12 @@ function fallbackCritiqueTrace(
     error,
     critique: {
       summary: 'Fallback critique uses baseline deterministic evaluator failures until live Gemini critique is available.',
-      failureAnalysis,
-      proposedExperiment: 'Keep the thermal-contact candidate and run it against the full seeded scenario sweep.',
+      failureAnalysis: [...failureAnalysis, ...memoryFailureAnalysis],
+      proposedExperiment: `Keep the thermal-contact candidate and run it against the full seeded scenario sweep.${memoryExperiment}`,
       expectedMetricMove: 'Expect thermal/contact dimensions to improve while guardrail stays flat or improves.',
       promotionRecommendation: 'hold',
       guardrailConcerns: ['requires-live-gemini-critique-before-judge-claim'],
-      judgeNarrative: 'OrbitForge labels this as fallback analysis and does not present it as live Gemini output.',
+      judgeNarrative: `OrbitForge labels this as fallback analysis and does not present it as live Gemini output.${memoryJudgeNote}`,
     },
   };
 }

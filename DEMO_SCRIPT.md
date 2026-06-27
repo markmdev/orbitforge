@@ -199,6 +199,8 @@ Latest rehearsal proof:
 - Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
   `contact:27`, golden sweep `+11`, guardrail canary hold, and a retained
   recent-memory ledger entry that survives reset/reload.
+- Gemini Trace plan/critique context and computer-use audit prompt included the
+  retained learning memory summary after the write.
 - Scenario Lab generated `Stress Drill 01: Wildfire SAR Rapid Response`,
   selected it, expanded the library from `3` to `4` scenarios, and reset
   restored the library to `3`.

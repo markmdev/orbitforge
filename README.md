@@ -12,7 +12,8 @@ The app is a runnable orbital-compute mission console. It shows:
 - seeded orbital nodes, ground stations, workload scenarios, and link/thermal
   constraints;
 - Gemini 3.5 operator plan and improvement critique traces through app runtime
-  API routes;
+  API routes, with recent learning memory included in plan/critique/audit
+  context;
 - deterministic scorecards, policy mutation, A/B sweep, learning-memory
   ledger persisted in browser state, explicit operator-run improvement pass,
   scenario-scoped promotion gate, first-viewport next-action command strip,

@@ -49,6 +49,42 @@ describe('Gemini plan parser', () => {
     expect(trace.plan?.rationale).not.toContain('wildfire');
     expect(trace.plan?.constraintsUsed).toContain('radiation');
   });
+
+  it('marks fallback operator plans as memory-aware when retained memory exists', async () => {
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ ok: false, error: 'quota blocked' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+    const trace = await requestGeminiPlan({
+      scenario: {
+        name: 'Wildfire SAR Rapid Response',
+        incident: 'Thermal pressure plus optical-weather outage',
+        workload: 'Synthetic aperture radar inference',
+        freshnessMinutes: 15,
+        deadlinePressure: 96,
+        thermalSensitivity: 70,
+        contactSensitivity: 82,
+      },
+      baselinePolicy: { id: 'policy-v0' },
+      baselineScore: { total: 70 },
+      mutation: { summary: 'Raise thermal/contact awareness.' },
+      learningMemory: [
+        {
+          scenarioName: 'Wildfire SAR Rapid Response',
+          failureSignature: 'thermal:21, contact:27',
+          averageDelta: 11,
+        },
+      ],
+    });
+
+    expect(trace.status).toBe('fallback');
+    expect(trace.plan?.constraintsUsed).toContain('learning-memory');
+    expect(trace.plan?.risks).toContain('seeded-learning-memory');
+    expect(trace.plan?.recommendedPolicyPatch).toContain('Reuse retained memory');
+    expect(trace.plan?.recommendedPolicyPatch).toContain('thermal:21, contact:27');
+  });
 });
 
 describe('Gemini critique parser', () => {
@@ -92,5 +128,38 @@ describe('Gemini critique parser', () => {
     expect(trace.critique?.summary).toContain('baseline deterministic evaluator failures');
     expect(trace.critique?.failureAnalysis).toContain('Deterministic evaluator flagged thermal:21.');
     expect(trace.critique?.failureAnalysis).toContain('Deterministic evaluator flagged contact:27.');
+  });
+
+  it('reuses retained memory when blocked critique falls back', async () => {
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ ok: false, error: 'quota blocked' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+    const trace = await requestGeminiCritique({
+      scenario: { name: 'Wildfire SAR Rapid Response' },
+      baselinePolicy: { id: 'policy-v0' },
+      candidatePolicy: { id: 'policy-v1' },
+      baselineScore: { failures: ['thermal:21'] },
+      candidateScore: { total: 86 },
+      mutation: { summary: 'Raise thermal/contact awareness.' },
+      scenarioResults: [],
+      promotionDecision: { promoted: true },
+      learningMemory: [
+        {
+          scenarioName: 'Wildfire SAR Rapid Response',
+          failureSignature: 'thermal:21, contact:27',
+          averageDelta: 11,
+        },
+      ],
+    });
+
+    expect(trace.status).toBe('fallback');
+    expect(trace.critique?.failureAnalysis).toContain(
+      'Retained learning memory: thermal:21, contact:27 on Wildfire SAR Rapid Response with sweep 11.',
+    );
+    expect(trace.critique?.proposedExperiment).toContain('retained learning-memory signature');
+    expect(trace.critique?.judgeNarrative).toContain('reuses retained learning memory');
   });
 });

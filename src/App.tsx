@@ -396,16 +396,14 @@ export function App() {
       promoted: improvementCycle.promoted,
       createdAt: new Date().toISOString(),
     });
+    const nextLearningMemory = upsertLearningMemory(learningMemory, memoryEntry);
 
     setStagedImprovementKey(improvementKey);
     setPromotedImprovementKey(null);
     setActivePolicy(baselinePolicy);
     setMissionExecution(null);
-    setLearningMemory((entries) => {
-      const nextEntries = upsertLearningMemory(entries, memoryEntry);
-      saveLearningMemoryEntries(nextEntries);
-      return nextEntries;
-    });
+    setLearningMemory(nextLearningMemory);
+    saveLearningMemoryEntries(nextLearningMemory);
     setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     setOperatorLog((entries) => [
       {
@@ -417,6 +415,7 @@ export function App() {
       ...entries,
     ]);
     requestGeminiCritique({
+      learningMemory: nextLearningMemory.slice(0, 4),
       scenario: activeScenario,
       baselinePolicy,
       candidatePolicy,
@@ -531,6 +530,7 @@ export function App() {
         improvementCycle,
         improvementStaged,
         missionExecution,
+        learningMemory: learningMemory.slice(0, 4),
         planTrace: geminiPlanTrace,
         critiqueTrace: geminiCritiqueTrace,
       });
@@ -631,6 +631,7 @@ export function App() {
 
     setGeminiPlanTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     requestGeminiPlan({
+      learningMemory: learningMemory.slice(0, 4),
       scenario: activeScenario,
       baselinePolicy,
       baselineScore,
@@ -643,7 +644,7 @@ export function App() {
     return () => {
       isCurrent = false;
     };
-  }, [activeScenario.id, geminiRunId]);
+  }, [activeScenario.id, geminiRunId, learningMemory, improvementCycle.mutation, baselineScore]);
 
   return (
     <main className="app-shell">

@@ -16,6 +16,7 @@ Last updated: 2026-06-27
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Learning memory | Reload after improvement | Recent memory ledger persists in browser state and shows retained scenario entry |
+| Memory-aware Gemini | Inspect Gemini Trace after memory write | Plan/critique/audit context includes retained learning memory; fallback marks `learning-memory` |
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion without leaking across scenarios |
 | Mission execution | Run mission plan | Timeline steps, selected node/station, data product, manifest chunks, freshness result, and operations log appear |
 | Work queue | Complete demo actions | Readiness moves from `1/7` to `7/7`; unfinished rows expose contextual actions or clear gates |
@@ -70,6 +71,10 @@ Current browser proof surfaces:
 - Learning memory: `Run improvement pass` writes a seeded retained memory entry
   with failure signature, active delta, average sweep delta, and guardrail
   status; the recent memory ledger survives reset/reload in browser storage.
+- Memory-aware Gemini context: after memory write, Gemini plan/critique request
+  context includes the retained ledger, fallback plan constraints include
+  `learning-memory`, and computer-use audit screen text includes the memory
+  summary.
 - Mission execution: Console `Run mission plan` creates a four-step timeline,
   selects `Kepler-2 -> New Mexico RF/Optical Hybrid`, delivers `Fireline SAR
   tiles` at `T+14m met`, shows a 4/4 verified 26 GB manifest with watermark
