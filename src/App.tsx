@@ -28,6 +28,13 @@ import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
 
 type View = 'console' | 'scenario' | 'evaluation' | 'policy' | 'trace';
 
+type OperatorLogEntry = {
+  id: string;
+  source: 'system' | 'operator';
+  label: string;
+  detail: string;
+};
+
 const viewLabels: Array<{ id: View; label: string }> = [
   { id: 'console', label: 'Console' },
   { id: 'scenario', label: 'Scenario Lab' },
@@ -53,9 +60,27 @@ const scoreDimensionLabels: Array<{ key: ScoreDimension; label: string }> = [
   { key: 'guardrail', label: 'Guardrail' },
 ];
 
+const baselinePolicy = policyVersions[0];
+const initialOperatorLog: OperatorLogEntry[] = [
+  {
+    id: 'log-scenario-loaded',
+    source: 'system',
+    label: 'Scenario armed',
+    detail: 'Wildfire SAR Rapid Response loaded with baseline policy and seeded telemetry.',
+  },
+  {
+    id: 'log-evaluation-ready',
+    source: 'system',
+    label: 'Candidate ready',
+    detail: 'Thermal-contact candidate generated and waiting for operator promotion.',
+  },
+];
+
 export function App() {
   const [activeView, setActiveView] = useState<View>('console');
   const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
+  const [activePolicy, setActivePolicy] = useState(baselinePolicy);
+  const [operatorLog, setOperatorLog] = useState<OperatorLogEntry[]>(initialOperatorLog);
   const [geminiPlanTrace, setGeminiPlanTrace] = useState<GeminiPlanTrace>({
     status: 'idle',
     model: 'gemini-3.5-flash',
@@ -74,17 +99,19 @@ export function App() {
   const [judgeReport, setJudgeReport] = useState('');
   const [geminiRunId, setGeminiRunId] = useState(0);
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
-  const currentPolicy = policyVersions[0];
   const improvementCycle = useMemo(
-    () => runImprovementCycle(activeScenario, currentPolicy, scenarios, orbitalNodes, groundStations),
-    [activeScenario, currentPolicy],
+    () => runImprovementCycle(activeScenario, baselinePolicy, scenarios, orbitalNodes, groundStations),
+    [activeScenario],
   );
   const candidatePolicy = improvementCycle.mutation.candidatePolicy;
+  const candidateAlreadyActive = activePolicy.id === candidatePolicy.id;
+  const canPromoteCandidate = improvementCycle.promoted && !candidateAlreadyActive;
   const primaryResult =
     improvementCycle.scenarioResults.find((result) => result.scenarioId === activeScenario.id) ??
     improvementCycle.scenarioResults[0];
   const baselineScore = primaryResult.baselineScore;
   const candidateScore = primaryResult.candidateScore;
+  const activePolicyScore = candidateAlreadyActive ? candidateScore.total : baselineScore.total;
   const learningFailureSignature =
     improvementCycle.mutation.targetFailures.length > 0
       ? improvementCycle.mutation.targetFailures.join(', ')
@@ -142,11 +169,48 @@ export function App() {
   );
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
+    setActivePolicy(baselinePolicy);
+    setOperatorLog([
+      {
+        id: `log-reset-${Date.now()}`,
+        source: 'operator',
+        label: 'Demo reset',
+        detail: 'Baseline policy restored; report and audit state cleared.',
+      },
+      ...initialOperatorLog,
+    ]);
+    setComputerAuditTrace({
+      status: 'idle',
+      model: 'gemini-3.5-flash',
+      executionMode: 'propose_only',
+      actions: [],
+    });
+    setReportStatus('idle');
+    setJudgeReport('');
+    setActiveView('console');
+  };
+  const promoteCandidatePolicy = () => {
+    if (!canPromoteCandidate) {
+      return;
+    }
+
+    setActivePolicy(candidatePolicy);
+    setOperatorLog((entries) => [
+      {
+        id: `log-promote-${Date.now()}`,
+        source: 'operator',
+        label: 'Candidate promoted',
+        detail: `${candidatePolicy.name} is now active. Score changed from ${baselineScore.total} to ${candidateScore.total} on ${activeScenario.name}.`,
+      },
+      ...entries,
+    ]);
     setActiveView('console');
   };
   const copyJudgeReport = async () => {
     const report = buildJudgeReport({
       activeScenarioName: activeScenario.name,
+      activePolicyName: activePolicy.name,
+      activePolicyState: candidateAlreadyActive ? 'promoted' : 'baseline',
       baselineScore: baselineScore.total,
       candidatePolicyName: candidatePolicy.name,
       candidateScore: candidateScore.total,
@@ -183,7 +247,7 @@ export function App() {
       const snapshot = buildAuditSnapshot({
         activeView,
         scenario: activeScenario,
-        policy: currentPolicy,
+        policy: activePolicy,
         improvementCycle,
         planTrace: geminiPlanTrace,
         critiqueTrace: geminiCritiqueTrace,
@@ -217,7 +281,7 @@ export function App() {
     setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     requestGeminiPlan({
       scenario: activeScenario,
-      baselinePolicy: currentPolicy,
+      baselinePolicy,
       baselineScore,
       mutation: improvementCycle.mutation,
     }).then((trace) => {
@@ -227,7 +291,7 @@ export function App() {
     });
     requestGeminiCritique({
       scenario: activeScenario,
-      baselinePolicy: currentPolicy,
+      baselinePolicy,
       candidatePolicy,
       baselineScore,
       candidateScore,
@@ -278,11 +342,11 @@ export function App() {
 
         <section className="mission-card" aria-label="Current policy state">
           <p className="eyebrow">Active agent policy</p>
-          <strong>{currentPolicy.name}</strong>
-          <span>{currentPolicy.summary}</span>
+          <strong>{activePolicy.name}</strong>
+          <span>{activePolicy.summary}</span>
           <div className="score-chip">
             <Gauge size={16} />
-            Active policy score {baselineScore.total}
+            Active policy score {activePolicyScore}
           </div>
         </section>
       </aside>
@@ -365,7 +429,7 @@ export function App() {
                 Improvement proof
               </div>
               <div className="comparison-row">
-                <Metric label={currentPolicy.name} value={String(baselineScore.total)} />
+                <Metric label={baselinePolicy.name} value={String(baselineScore.total)} />
                 <Metric label={candidatePolicy.name} value={String(candidateScore.total)} />
               </div>
               <div className="delta-banner">
@@ -391,6 +455,24 @@ export function App() {
                 ))}
               </div>
             </section>
+
+            <section className="panel activity-panel">
+              <div className="panel-title">
+                <Activity size={18} />
+                Operations log
+              </div>
+              <div className="activity-list">
+                {operatorLog.map((entry) => (
+                  <article className="activity-row" key={entry.id}>
+                    <div>
+                      <strong>{entry.label}</strong>
+                      <span>{entry.detail}</span>
+                    </div>
+                    <span className={`source-pill ${entry.source}`}>{entry.source}</span>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
         )}
 
@@ -408,6 +490,15 @@ export function App() {
                   type="button"
                   onClick={() => {
                     setActiveScenarioId(scenario.id);
+                    setOperatorLog((entries) => [
+                      {
+                        id: `log-scenario-${scenario.id}-${Date.now()}`,
+                        source: 'operator',
+                        label: 'Scenario selected',
+                        detail: `${scenario.name} loaded for seeded evaluation.`,
+                      },
+                      ...entries,
+                    ]);
                     setActiveView('console');
                   }}
                 >
@@ -495,8 +586,8 @@ export function App() {
             <div className="policy-diff">
               <div>
                 <p className="eyebrow">Baseline</p>
-                <strong>{currentPolicy.name}</strong>
-                <span>{currentPolicy.summary}</span>
+                <strong>{baselinePolicy.name}</strong>
+                <span>{baselinePolicy.summary}</span>
               </div>
               <div>
                 <p className="eyebrow">Candidate</p>
@@ -513,6 +604,20 @@ export function App() {
               <span>
                 {' '}Seeded memory records {activeScenario.id} failure signature {learningFailureSignature} as candidate patch;
                 retained only after golden sweep {signedDelta(improvementCycle.averageDelta)} and guardrail canary hold.
+              </span>
+            </div>
+            <div className="workflow-actions">
+              <button
+                className="reset-button primary-action"
+                type="button"
+                onClick={promoteCandidatePolicy}
+                disabled={!canPromoteCandidate}
+              >
+                <ShieldCheck size={16} />
+                {candidateAlreadyActive ? 'Candidate active' : 'Promote candidate'}
+              </button>
+              <span className={candidateAlreadyActive ? 'report-status copied' : 'report-status'}>
+                {candidateAlreadyActive ? `${candidatePolicy.name} is active` : 'Candidate is staged for operator approval'}
               </span>
             </div>
             <div className="diff-list">

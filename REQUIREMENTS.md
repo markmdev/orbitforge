@@ -22,6 +22,7 @@ fleet:
 - data products;
 - active incidents;
 - agent version and improvement score.
+- active policy state and operator activity log.
 
 ### R2 - Scenario Runner
 
@@ -68,6 +69,8 @@ The system must show improvement over time:
 - run the old and new versions against the same scenario set;
 - promote a better version only if it improves score without violating
   guardrails;
+- let the operator promote the candidate into active policy state;
+- record promotion/reset actions in an activity log;
 - show before/after diff and score delta in the UI.
 
 ### R6 - Gemini In-App Runtime Integration
@@ -102,7 +105,7 @@ The demo must be immediately legible:
 - no landing page as the first screen;
 - first screen is the live console;
 - clear progress loop: scenario -> agent plan -> evaluation -> mutation ->
-  before/after improvement;
+  before/after improvement -> operator promotion;
 - visually polished and technically dense;
 - seeded data labeled honestly.
 

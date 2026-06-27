@@ -1,5 +1,7 @@
 export type JudgeReportInput = {
   activeScenarioName: string;
+  activePolicyName: string;
+  activePolicyState: 'baseline' | 'promoted';
   baselineScore: number;
   candidatePolicyName: string;
   candidateScore: number;
@@ -30,6 +32,7 @@ export function buildJudgeReport(input: JudgeReportInput): string {
     'OrbitForge Judge Report',
     '',
     `Scenario: ${input.activeScenarioName}`,
+    `Active policy: ${input.activePolicyName} (${input.activePolicyState})`,
     `Baseline score: ${input.baselineScore}`,
     `Candidate policy: ${input.candidatePolicyName}`,
     `Candidate score: ${input.candidateScore}`,

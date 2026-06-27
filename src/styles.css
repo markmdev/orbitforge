@@ -408,7 +408,8 @@ h3 {
 
 .node-list,
 .trace-list,
-.scenario-table {
+.scenario-table,
+.activity-list {
   display: grid;
   gap: 10px;
 }
@@ -418,6 +419,7 @@ h3 {
 .scenario-row,
 .score-sweep-row,
 .trace-card,
+.activity-row,
 .ground-strip article {
   display: flex;
   justify-content: space-between;
@@ -445,9 +447,15 @@ h3 {
 .scenario-row div,
 .score-sweep-row div,
 .trace-card div,
+.activity-row div,
 .ground-strip article {
   display: grid;
   gap: 4px;
+}
+
+.activity-row span:not(.source-pill) {
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .status-pill.nominal {
@@ -475,6 +483,10 @@ h3 {
 .source-pill.gemini-fallback,
 .source-pill.operator {
   color: var(--amber);
+}
+
+.source-pill.system {
+  color: var(--steel);
 }
 
 .trace-row-meta {
@@ -588,6 +600,20 @@ h3 {
   display: flex;
   justify-content: flex-end;
   margin: -4px 0 12px;
+}
+
+.workflow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.primary-action {
+  border-color: rgba(125, 223, 140, 0.32);
+  color: var(--green);
+  background: rgba(125, 223, 140, 0.08);
 }
 
 .policy-diff > div {
@@ -722,6 +748,7 @@ h3 {
   .audit-header,
   .node-row,
   .trace-row,
+  .activity-row,
   .scenario-row,
   .score-sweep-row,
   .ground-strip article,

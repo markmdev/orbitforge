@@ -12,7 +12,7 @@ repeated simulated incidents.
 
 1. Open the Console.
 2. Point to the active seeded fleet, current policy version, and improvement
-   score.
+   proof.
 3. Trigger `Wildfire SAR Rapid Response`.
 4. Show Gemini's initial operational plan.
 5. Show the deterministic evaluator catching a weakness.
@@ -21,7 +21,8 @@ repeated simulated incidents.
 8. Show A/B score improvement and policy diff.
 9. Show the learning-memory writeback from failure signature to candidate
    patch.
-10. Show the deterministic promotion gate and score delta.
+10. Click `Promote candidate` and show the active policy and operations log
+    change.
 11. Show the guardrail canary rejecting an unsafe overclaiming mutation.
 12. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
@@ -81,7 +82,13 @@ Run improvement pass:
   candidate patch;
 - promotion gate checks score and guardrails.
 
-Show diff and score delta.
+Click `Promote candidate`, then show the Console:
+
+- active policy changes to `v1 generated thermal-contact candidate`;
+- active score changes from `70` to `85`;
+- operations log records `Candidate promoted`.
+
+Show diff, score delta, and the fact that `Reset demo` restores the baseline.
 
 ### 2:10 - 2:40: Computer Use Audit
 
@@ -126,11 +133,14 @@ Before handing the app to judges:
    `Baseline policy favors hot accelerator node and misses optical outage.`
 5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+15`,
    and `Average sweep +11`.
-6. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
+6. Click `Promote candidate`, confirm Console shows active policy score `85`,
+   and confirm operations log includes `Candidate promoted`.
+7. Click `Reset demo`, confirm active policy score returns to `70`.
+8. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
-7. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+9. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
    live/fallback status for each Gemini surface.
-8. Confirm the audit surface or judge report shows `propose-only` mode and
+10. Confirm the audit surface or judge report shows `propose-only` mode and
    `Prompt-injection guard: enabled` after running audit.
 
 Latest rehearsal proof:
@@ -142,9 +152,13 @@ Latest rehearsal proof:
 - Policy Lab showed candidate patch, `+15`, and `Average sweep +11`.
 - Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
   `contact:27`, golden sweep `+11`, and guardrail canary hold.
+- Policy Lab `Promote candidate` changed active policy to
+  `v1 generated thermal-contact candidate`, updated active score from `70` to
+  `85`, and wrote `Candidate promoted` to the operations log.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only` and `Prompt guardenabled`.
 - Copy report included `Computer-use mode: propose-only`,
-  `Prompt-injection guard: enabled`, and seeded telemetry guardrail.
+  `Prompt-injection guard: enabled`, active policy state, and seeded telemetry
+  guardrail.
 - Reset returned to Console with wildfire baseline.
 - Browser warnings/errors were empty.

@@ -5,6 +5,8 @@ describe('judge report', () => {
   it('includes Gemini errors, audit metadata, promotion delta, and seeded-data guardrail', () => {
     const report = buildJudgeReport({
       activeScenarioName: 'Wildfire SAR Rapid Response',
+      activePolicyName: 'v1 thermal-aware candidate',
+      activePolicyState: 'promoted',
       baselineScore: 72,
       candidatePolicyName: 'v1 thermal-aware candidate',
       candidateScore: 83,
@@ -20,6 +22,7 @@ describe('judge report', () => {
     });
 
     expect(report).toContain('Scenario: Wildfire SAR Rapid Response');
+    expect(report).toContain('Active policy: v1 thermal-aware candidate (promoted)');
     expect(report).toContain('Average sweep delta: +10');
     expect(report).toContain('Promotion gate: accepted');
     expect(report).toContain('Operator plan: fallback (You do not have enough quota to make this request.)');
