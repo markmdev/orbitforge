@@ -181,6 +181,14 @@ h3 {
   align-items: center;
 }
 
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+}
+
 .view-grid {
   display: grid;
   gap: 16px;
@@ -484,6 +492,27 @@ h3 {
   opacity: 0.52;
 }
 
+.report-status {
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.report-status.copied {
+  border-color: rgba(125, 223, 140, 0.28);
+  color: var(--green);
+  background: rgba(125, 223, 140, 0.08);
+}
+
+.report-status.blocked {
+  border-color: rgba(239, 127, 114, 0.28);
+  color: var(--red);
+  background: rgba(239, 127, 114, 0.08);
+}
+
 .gemini-output h3 {
   margin-bottom: 8px;
 }
@@ -550,6 +579,20 @@ h3 {
   background: rgba(16, 20, 18, 0.68);
 }
 
+.report-panel {
+  border-color: rgba(125, 223, 140, 0.24);
+  background: rgba(125, 223, 140, 0.06);
+}
+
+.report-panel pre {
+  max-height: 180px;
+  margin: 0;
+  overflow: auto;
+  color: #d9e8df;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @media (max-width: 1040px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -606,6 +649,7 @@ h3 {
   }
 
   .topbar,
+  .topbar-actions,
   .audit-header,
   .node-row,
   .scenario-row,

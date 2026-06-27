@@ -1,6 +1,7 @@
 import {
   Activity,
   BrainCircuit,
+  Copy,
   Gauge,
   GitCompare,
   MousePointerClick,
@@ -64,6 +65,8 @@ export function App() {
     model: 'gemini-3.5-flash',
     actions: [],
   });
+  const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
+  const [judgeReport, setJudgeReport] = useState('');
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
   const improvementCycle = useMemo(
@@ -113,6 +116,30 @@ export function App() {
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
     setActiveView('console');
+  };
+  const copyJudgeReport = async () => {
+    const report = buildJudgeReport({
+      activeScenarioName: activeScenario.name,
+      baselineScore: baselineScore.total,
+      candidatePolicyName: candidatePolicy.name,
+      candidateScore: candidateScore.total,
+      averageDelta: improvementCycle.averageDelta,
+      promoted: improvementCycle.promoted,
+      planStatus: geminiPlanTrace.status,
+      planError: geminiPlanTrace.error,
+      critiqueStatus: geminiCritiqueTrace.status,
+      critiqueError: geminiCritiqueTrace.error,
+      auditStatus: computerAuditTrace.status,
+      auditError: computerAuditTrace.error,
+    });
+    setJudgeReport(report);
+
+    try {
+      await navigator.clipboard.writeText(report);
+      setReportStatus('copied');
+    } catch {
+      setReportStatus('blocked');
+    }
   };
   const runComputerAudit = async () => {
     setComputerAuditTrace({
@@ -235,11 +262,31 @@ export function App() {
             <p className="eyebrow">Gemini self-improvement stack</p>
             <h2>{viewLabels.find((view) => view.id === activeView)?.label}</h2>
           </div>
-          <button className="reset-button" type="button" onClick={resetDemo}>
-            <RotateCcw size={16} />
-            Reset demo
-          </button>
+          <div className="topbar-actions">
+            <button className="reset-button" type="button" onClick={copyJudgeReport}>
+              <Copy size={16} />
+              Copy report
+            </button>
+            <button className="reset-button" type="button" onClick={resetDemo}>
+              <RotateCcw size={16} />
+              Reset demo
+            </button>
+            {reportStatus !== 'idle' && (
+              <span className={reportStatus === 'copied' ? 'report-status copied' : 'report-status blocked'}>
+                {reportStatus === 'copied' ? 'Report copied' : 'Clipboard blocked'}
+              </span>
+            )}
+          </div>
         </header>
+
+        {judgeReport && (
+          <section className="panel report-panel" aria-label="Judge report export">
+            <div>
+              <p className="eyebrow">{reportStatus === 'blocked' ? 'Manual copy report' : 'Judge report'}</p>
+              <pre>{judgeReport}</pre>
+            </div>
+          </section>
+        )}
 
         {activeView === 'console' && (
           <div className="view-grid console-grid">
@@ -660,4 +707,41 @@ function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace | GeminiComp
   }
 
   return trace.latencyMs ? `${trace.latencyMs} ms` : '--';
+}
+
+function buildJudgeReport(input: {
+  activeScenarioName: string;
+  baselineScore: number;
+  candidatePolicyName: string;
+  candidateScore: number;
+  averageDelta: number;
+  promoted: boolean;
+  planStatus: string;
+  planError?: string;
+  critiqueStatus: string;
+  critiqueError?: string;
+  auditStatus: string;
+  auditError?: string;
+}): string {
+  return [
+    'OrbitForge Judge Report',
+    '',
+    `Scenario: ${input.activeScenarioName}`,
+    `Baseline score: ${input.baselineScore}`,
+    `Candidate policy: ${input.candidatePolicyName}`,
+    `Candidate score: ${input.candidateScore}`,
+    `Average sweep delta: ${signedDelta(input.averageDelta)}`,
+    `Promotion gate: ${input.promoted ? 'accepted' : 'held'}`,
+    '',
+    'Gemini surfaces:',
+    `- Operator plan: ${formatReportStatus(input.planStatus, input.planError)}`,
+    `- Improvement critique: ${formatReportStatus(input.critiqueStatus, input.critiqueError)}`,
+    `- Computer-use audit: ${formatReportStatus(input.auditStatus, input.auditError)}`,
+    '',
+    'Guardrail: all telemetry is seeded simulation data; OrbitForge does not claim real satellite control.',
+  ].join('\n');
+}
+
+function formatReportStatus(status: string, error?: string): string {
+  return error ? `${status} (${error})` : status;
 }
