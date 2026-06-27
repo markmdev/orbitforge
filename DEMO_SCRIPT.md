@@ -131,10 +131,14 @@ Before handing the app to judges:
 
 Latest rehearsal proof:
 
+- Console showed the Wildfire SAR incident, improvement proof, Gemini trace
+  status, and ground contact strip.
 - Evaluation showed `Guardrail canary held` and blocked the unsafe overclaiming
   canary at guardrail score 25.
 - Policy Lab showed candidate patch, `+11`, and `Average sweep +10`.
-- Gemini Trace showed operator plan, improvement critique, computer-use audit,
-  prompt guard/propose-only metadata, and quota/fallback story.
+- Gemini Trace retry showed the exact quota blocker, and Run audit showed
+  fallback state with `Modepropose-only` and `Prompt guardenabled`.
+- Copy report included `Computer-use mode: propose-only`,
+  `Prompt-injection guard: enabled`, and seeded telemetry guardrail.
 - Reset returned to Console with wildfire baseline.
 - Browser warnings/errors were empty.
