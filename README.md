@@ -17,6 +17,8 @@ The app is a runnable orbital-compute mission console. It shows:
   writeback, promotion gate, scenario-aware incident command deck, stateful
   operator promotion, incident work queue, operations log, and a visible
   unsafe-policy guardrail canary;
+- seeded stress-drill generation that appends a new what-if scenario to the
+  current evaluation library and gives it a command deck;
 - Gemini 3.5 Flash computer-use audit path with a generated audit frame,
   propose-only actions, prompt-injection guard state, and exact quota/API
   blocker display;

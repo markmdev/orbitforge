@@ -93,7 +93,7 @@ const scenarioCommandDecks: Record<string, IncidentCommand[]> = {
 };
 
 export function getIncidentCommands(scenario: Scenario): IncidentCommand[] {
-  return scenarioCommandDecks[scenario.id] ?? [];
+  return scenarioCommandDecks[scenario.id] ?? buildGenericCommandDeck(scenario);
 }
 
 export function applyIncidentCommand(scenario: Scenario, appliedCommandIds: string[], commandId: string): string[] {
@@ -104,6 +104,32 @@ export function applyIncidentCommand(scenario: Scenario, appliedCommandIds: stri
   }
 
   return [...appliedCommandIds, commandId];
+}
+
+function buildGenericCommandDeck(scenario: Scenario): IncidentCommand[] {
+  return [
+    {
+      id: `${scenario.id}-reserve-contact`,
+      label: 'Reserve healthiest contact',
+      detail: `Protect ${scenario.workload} downlink against the generated contact escalation.`,
+      impactLabel: 'contact +70, freshness +10',
+      impact: { contact: 70, freshness: 10 },
+    },
+    {
+      id: `${scenario.id}-rebalance-thermal`,
+      label: 'Rebalance thermal load',
+      detail: 'Move high-heat stages to the coolest available node before the next inference burst.',
+      impactLabel: 'thermal +52, freshness +8',
+      impact: { thermal: 52, freshness: 8 },
+    },
+    {
+      id: `${scenario.id}-tighten-confidence`,
+      label: 'Tighten confidence gate',
+      detail: 'Require confidence bands and seeded-data disclosure before exporting operator evidence.',
+      impactLabel: 'confidence +32, contact +8',
+      impact: { confidence: 32, contact: 8 },
+    },
+  ];
 }
 
 export function summarizeIncidentCommands(scenario: Scenario, appliedCommandIds: string[]): IncidentCommandSummary {

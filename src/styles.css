@@ -606,6 +606,14 @@ h3 {
   margin: -4px 0 12px;
 }
 
+.scenario-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
 .workflow-actions {
   display: flex;
   flex-wrap: wrap;

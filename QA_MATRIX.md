@@ -9,6 +9,7 @@ Last updated: 2026-06-27
 | First load | Open app fresh | Console appears without setup confusion |
 | Reset | Reset demo state | Known baseline scenario and policy return |
 | Scenario | Run wildfire scenario | Active scenario, seeded telemetry, and workload appear |
+| Stress drill | Generate stress drill | Scenario library grows, generated drill is selected, reset restores original library |
 | Command deck | Apply incident commands | Readiness score rises, command buttons become applied, operations log records commands |
 | Gemini plan | Generate plan | Plan appears with placement, reasoning, risk, confidence |
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
@@ -29,9 +30,16 @@ Current browser proof surfaces:
   without overlap.
 - In-app browser, mobile `390x844`: Console and active incident are visible in
   the first viewport; mobile nav is compact.
+- Stress drill generator: Scenario Lab starts with `3` scenarios, `Generate
+  stress drill` adds `Stress Drill 01: Wildfire SAR Rapid Response`, selects it,
+  and reset restores the library to `3` scenarios.
+- Generated drill evaluation: the deterministic evaluator sweeps `4` scenarios
+  after drill generation, including `stress-wildfire-sar-01`.
 - Incident command deck: applying the three wildfire commands changes incident
   readiness from `45%` active to `82%` stabilized, disables applied command
   buttons, and records operator log entries.
+- Generated drill command deck: generic generated-drill commands move readiness
+  from `34%` active to `83%` stabilized.
 - Gemini Trace: plan, critique, and computer-use audit panels preserve
   prompt/output previews and label live/fallback state.
 - Evaluation: guardrail canary is visible and blocks unsafe overclaiming

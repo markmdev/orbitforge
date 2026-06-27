@@ -14,19 +14,21 @@ repeated simulated incidents.
 2. Point to the active seeded fleet, current policy version, and improvement
    proof.
 3. Trigger `Wildfire SAR Rapid Response`.
-4. Apply the incident command deck and show seeded readiness improving.
-5. Show Gemini's initial operational plan.
-6. Show the deterministic evaluator catching a weakness.
-7. Show the improvement pass.
-8. Show Gemini's critique and the app-generated policy mutation.
-9. Show A/B score improvement and policy diff.
-10. Show the learning-memory writeback from failure signature to candidate
+4. Generate a stress drill from the active scenario and show the scenario
+   library/eval set expanding.
+5. Apply the incident command deck and show seeded readiness improving.
+6. Show Gemini's initial operational plan.
+7. Show the deterministic evaluator catching a weakness.
+8. Show the improvement pass.
+9. Show Gemini's critique and the app-generated policy mutation.
+10. Show A/B score improvement and policy diff.
+11. Show the learning-memory writeback from failure signature to candidate
    patch.
-11. Click `Promote candidate` and show the active policy and operations log
+12. Click `Promote candidate` and show the active policy and operations log
     change.
-12. Show the incident work queue moving from open tasks toward readiness.
-13. Show the guardrail canary rejecting an unsafe overclaiming mutation.
-14. Show Gemini computer-use audit result, including propose-only mode and
+13. Show the incident work queue moving from open tasks toward readiness.
+14. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+15. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
 
 Closing line:
@@ -53,6 +55,14 @@ Trigger wildfire scenario:
 - optical weather outage at one ground station.
 
 Show Gemini operator plan.
+
+Optional stress drill:
+
+- open Scenario Lab;
+- click `Generate stress drill`;
+- show `Stress Drill 01` selected and the scenario library expanding from 3 to
+  4 scenarios;
+- open Evaluation and point to the 4-scenario sweep.
 
 Apply incident commands:
 
@@ -146,19 +156,21 @@ Before handing the app to judges:
    `Baseline policy favors hot accelerator node and misses optical outage.`
 5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+15`,
    and `Average sweep +11`.
-6. Apply the three incident commands and confirm readiness reaches stabilized
+6. Optionally generate one stress drill and confirm reset can restore the
+   library to 3 scenarios.
+7. Apply the three incident commands and confirm readiness reaches stabilized
    state.
-7. Click `Promote candidate`, confirm Console shows active policy score `85`,
+8. Click `Promote candidate`, confirm Console shows active policy score `85`,
    and confirm operations log includes `Candidate promoted`.
-8. Confirm incident work queue reaches `5/5` after audit result and report
+9. Confirm incident work queue reaches `5/5` after audit result and report
    export.
-9. Click `Reset demo`, confirm active policy score returns to `70` and work
+10. Click `Reset demo`, confirm active policy score returns to `70` and work
    queue returns to `1/5`.
-10. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
+11. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
-11. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+12. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
    live/fallback status for each Gemini surface.
-12. Confirm the audit surface or judge report shows `propose-only` mode and
+13. Confirm the audit surface or judge report shows `propose-only` mode and
    `Prompt-injection guard: enabled` after running audit.
 
 Latest rehearsal proof:
@@ -170,6 +182,13 @@ Latest rehearsal proof:
 - Policy Lab showed candidate patch, `+15`, and `Average sweep +11`.
 - Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
   `contact:27`, golden sweep `+11`, and guardrail canary hold.
+- Scenario Lab generated `Stress Drill 01: Wildfire SAR Rapid Response`,
+  selected it, expanded the library from `3` to `4` scenarios, and reset
+  restored the library to `3`.
+- The generated drill received a generic command deck; applying all three
+  commands raised readiness from `34%` active to `83%` stabilized.
+- Evaluation after drill generation swept `4` scenarios including
+  `stress-wildfire-sar-01`.
 - Incident command deck applied `Reroute to Svalbard relay`,
   `Split preprocessing to Kepler-2`, and `Attach confidence watermark`, raising
   seeded readiness from `45%` active to `82%` stabilized and recording each

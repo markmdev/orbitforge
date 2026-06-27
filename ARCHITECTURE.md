@@ -19,6 +19,7 @@ Recommended first build:
 
 ```text
 Seeded scenario library
+  -> stress drill generator
   -> scenario runner
   -> incident command deck
   -> Gemini operator agent
@@ -35,7 +36,8 @@ Seeded scenario library
 
 - **Console**: mission overview, live scenario, scenario-aware command deck,
   queue, alerts, agent version, improvement score.
-- **Scenario Lab**: seeded incidents, run history, scenario generator.
+- **Scenario Lab**: seeded incidents, generated stress drills, run history,
+  scenario generator.
 - **Policy Lab**: current policy, candidate mutation, diff, promotion gate.
 - **Evaluation**: scorecards, trace replay, before/after comparison.
 - **Gemini Trace**: model calls, computer-use audit, generated
@@ -64,6 +66,7 @@ Core domain entities:
 - `OrbitalNode`
 - `Workload`
 - `Scenario`
+- `StressDrill`
 - `Incident`
 - `ContactWindow`
 - `TelemetrySample`

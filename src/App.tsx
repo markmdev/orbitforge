@@ -25,6 +25,7 @@ import { decidePromotion, evaluatePlan } from './domain/evaluator';
 import { applyIncidentCommand, getIncidentCommands, summarizeIncidentCommands } from './domain/incidentActions';
 import { runImprovementCycle } from './domain/improvement';
 import { buildJudgeReport, formatAuditMode, formatPromptGuard } from './domain/judgeReport';
+import { createStressDrill } from './domain/scenarioDrill';
 import { runPolicyOnScenario } from './domain/scenarioRunner';
 import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
 
@@ -87,6 +88,7 @@ const initialOperatorLog: OperatorLogEntry[] = [
 
 export function App() {
   const [activeView, setActiveView] = useState<View>('console');
+  const [scenarioLibrary, setScenarioLibrary] = useState(scenarios);
   const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
   const [activePolicy, setActivePolicy] = useState(baselinePolicy);
   const [appliedCommandIds, setAppliedCommandIds] = useState<string[]>([]);
@@ -108,10 +110,10 @@ export function App() {
   const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
   const [judgeReport, setJudgeReport] = useState('');
   const [geminiRunId, setGeminiRunId] = useState(0);
-  const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
+  const activeScenario = scenarioLibrary.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const improvementCycle = useMemo(
-    () => runImprovementCycle(activeScenario, baselinePolicy, scenarios, orbitalNodes, groundStations),
-    [activeScenario],
+    () => runImprovementCycle(activeScenario, baselinePolicy, scenarioLibrary, orbitalNodes, groundStations),
+    [activeScenario, scenarioLibrary],
   );
   const candidatePolicy = improvementCycle.mutation.candidatePolicy;
   const candidateAlreadyActive = activePolicy.id === candidatePolicy.id;
@@ -190,7 +192,7 @@ export function App() {
     ],
   );
   const completedWorkItems = workQueue.filter((item) => item.complete).length;
-  const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
+  const totalRawGb = useMemo(() => scenarioLibrary.reduce((sum, scenario) => sum + scenario.rawGb, 0), [scenarioLibrary]);
   const runtimeTraceEvents = useMemo<TraceEvent[]>(
     () => [
       {
@@ -213,7 +215,7 @@ export function App() {
       {
         ...traceEvents[3],
         status: 'complete',
-        detail: `App-owned evaluator swept ${scenarios.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`,
+        detail: `App-owned evaluator swept ${scenarioLibrary.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`,
       },
       {
         ...traceEvents[4],
@@ -222,9 +224,18 @@ export function App() {
         detail: getComputerAuditDetail(computerAuditTrace),
       },
     ],
-    [activeScenario, computerAuditTrace, geminiCritiqueTrace, geminiPlanTrace, improvementCycle.averageDelta, improvementCycle.promoted],
+    [
+      activeScenario,
+      computerAuditTrace,
+      geminiCritiqueTrace,
+      geminiPlanTrace,
+      improvementCycle.averageDelta,
+      improvementCycle.promoted,
+      scenarioLibrary.length,
+    ],
   );
   const resetDemo = () => {
+    setScenarioLibrary(scenarios);
     setActiveScenarioId(scenarios[0].id);
     setActivePolicy(baselinePolicy);
     setAppliedCommandIds([]);
@@ -281,6 +292,32 @@ export function App() {
       },
       ...entries,
     ]);
+  };
+  const generateStressDrill = () => {
+    const drillSequence = scenarioLibrary.filter((scenario) => scenario.id.startsWith('stress-')).length + 1;
+    const drill = createStressDrill(activeScenario, drillSequence);
+
+    setScenarioLibrary((library) => [...library, drill]);
+    setActiveScenarioId(drill.id);
+    setAppliedCommandIds([]);
+    setComputerAuditTrace({
+      status: 'idle',
+      model: 'gemini-3.5-flash',
+      executionMode: 'propose_only',
+      actions: [],
+    });
+    setReportStatus('idle');
+    setJudgeReport('');
+    setOperatorLog((entries) => [
+      {
+        id: `log-stress-drill-${drill.id}-${Date.now()}`,
+        source: 'operator',
+        label: 'Stress drill generated',
+        detail: `${drill.name} added to seeded scenario library and selected for evaluation.`,
+      },
+      ...entries,
+    ]);
+    setActiveView('console');
   };
   const copyJudgeReport = async () => {
     const report = buildJudgeReport({
@@ -380,7 +417,7 @@ export function App() {
         promoted: improvementCycle.promoted,
         averageDelta: improvementCycle.averageDelta,
         reasons: improvementCycle.reasons,
-        scenarioCount: scenarios.length,
+        scenarioCount: scenarioLibrary.length,
       },
     }).then((trace) => {
       if (isCurrent) {
@@ -391,7 +428,7 @@ export function App() {
     return () => {
       isCurrent = false;
     };
-  }, [activeScenario.id, geminiRunId]);
+  }, [activeScenario.id, geminiRunId, scenarioLibrary.length]);
 
   return (
     <main className="app-shell">
@@ -632,8 +669,15 @@ export function App() {
               <Radar size={18} />
               Seeded scenario library
             </div>
+            <div className="scenario-toolbar">
+              <button className="reset-button primary-action" type="button" onClick={generateStressDrill}>
+                <Sparkles size={16} />
+                Generate stress drill
+              </button>
+              <span className="report-status">Library {scenarioLibrary.length} scenarios</span>
+            </div>
             <div className="scenario-table">
-              {scenarios.map((scenario) => (
+              {scenarioLibrary.map((scenario) => (
                 <button
                   className={scenario.id === activeScenario.id ? 'scenario-row active' : 'scenario-row'}
                   key={scenario.id}
@@ -641,6 +685,14 @@ export function App() {
                   onClick={() => {
                     setActiveScenarioId(scenario.id);
                     setAppliedCommandIds([]);
+                    setComputerAuditTrace({
+                      status: 'idle',
+                      model: 'gemini-3.5-flash',
+                      executionMode: 'propose_only',
+                      actions: [],
+                    });
+                    setReportStatus('idle');
+                    setJudgeReport('');
                     setOperatorLog((entries) => [
                       {
                         id: `log-scenario-${scenario.id}-${Date.now()}`,
@@ -663,7 +715,7 @@ export function App() {
                 </button>
               ))}
             </div>
-            <div className="data-banner">Seeded workload library: {scenarios.length} scenarios, {totalRawGb} GB raw orbital data, zero real satellite control.</div>
+            <div className="data-banner">Seeded workload library: {scenarioLibrary.length} scenarios, {totalRawGb} GB raw orbital data, zero real satellite control.</div>
           </section>
         )}
 
@@ -687,7 +739,7 @@ export function App() {
               <article>
                 <p className="eyebrow">Golden sweep</p>
                 <strong>{signedDelta(improvementCycle.averageDelta)}</strong>
-                <span>{scenarios.length} seeded scenarios checked for regression.</span>
+                <span>{scenarioLibrary.length} seeded scenarios checked for regression.</span>
               </article>
             </div>
             <div className="score-grid">
