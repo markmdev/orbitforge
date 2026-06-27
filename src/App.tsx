@@ -1,6 +1,8 @@
 import { Activity, BrainCircuit, Gauge, GitCompare, Radar, RotateCcw, Satellite, ShieldCheck, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
+import { decidePromotion, evaluatePlan } from './domain/evaluator';
+import { runPolicyOnScenario } from './domain/scenarioRunner';
 import type { FleetStatus } from './domain/types';
 
 type View = 'console' | 'scenario' | 'evaluation' | 'policy' | 'trace';
@@ -24,6 +26,11 @@ export function App() {
   const activeScenario = scenarios[0];
   const currentPolicy = policyVersions[0];
   const candidatePolicy = policyVersions[1];
+  const baselinePlan = runPolicyOnScenario(activeScenario, currentPolicy, orbitalNodes, groundStations);
+  const candidatePlan = runPolicyOnScenario(activeScenario, candidatePolicy, orbitalNodes, groundStations);
+  const baselineScore = evaluatePlan(activeScenario, currentPolicy, baselinePlan, orbitalNodes, groundStations);
+  const candidateScore = evaluatePlan(activeScenario, candidatePolicy, candidatePlan, orbitalNodes, groundStations);
+  const promotionDecision = decidePromotion(baselineScore, candidateScore);
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
 
   return (
@@ -58,7 +65,7 @@ export function App() {
           <span>{currentPolicy.summary}</span>
           <div className="score-chip">
             <Gauge size={16} />
-            Improvement score {currentPolicy.score}
+            Improvement score {baselineScore.total}
           </div>
         </section>
       </aside>
@@ -116,10 +123,12 @@ export function App() {
                 Improvement proof
               </div>
               <div className="comparison-row">
-                <Metric label={currentPolicy.name} value={String(currentPolicy.score)} />
-                <Metric label={candidatePolicy.name} value={String(candidatePolicy.score)} />
+                <Metric label={currentPolicy.name} value={String(baselineScore.total)} />
+                <Metric label={candidatePolicy.name} value={String(candidateScore.total)} />
               </div>
-              <div className="delta-banner">+{candidatePolicy.score - currentPolicy.score} points after thermal/contact policy mutation</div>
+              <div className="delta-banner">
+                {promotionDecision.delta > 0 ? '+' : ''}{promotionDecision.delta} points after thermal/contact policy mutation
+              </div>
             </section>
 
             <section className="panel">
@@ -169,9 +178,14 @@ export function App() {
               Deterministic scorecard shell
             </div>
             <div className="score-grid">
-              {['Freshness', 'Power', 'Thermal', 'Contact', 'Data reduction', 'Risk', 'Explanation', 'Guardrail'].map((label, index) => (
-                <Metric key={label} label={label} value={String([84, 78, 51, 58, 91, 64, 73, 100][index])} />
-              ))}
+              <Metric label="Freshness" value={String(baselineScore.dimensions.freshness)} />
+              <Metric label="Power" value={String(baselineScore.dimensions.power)} />
+              <Metric label="Thermal" value={String(baselineScore.dimensions.thermal)} />
+              <Metric label="Contact" value={String(baselineScore.dimensions.contact)} />
+              <Metric label="Data reduction" value={String(baselineScore.dimensions.dataReduction)} />
+              <Metric label="Risk" value={String(baselineScore.dimensions.risk)} />
+              <Metric label="Explanation" value={String(baselineScore.dimensions.explanation)} />
+              <Metric label="Guardrail" value={String(baselineScore.dimensions.guardrail)} />
             </div>
             <p className="risk-note">Promotion will be decided by app-owned deterministic scores, not Gemini self-grading.</p>
           </section>
@@ -195,7 +209,9 @@ export function App() {
                 <span>{candidatePolicy.summary}</span>
               </div>
             </div>
-            <div className="delta-banner">Promotion gate pending evaluator implementation.</div>
+            <div className="delta-banner">
+              {promotionDecision.promoted ? 'Promotion accepted' : 'Promotion held'}: {promotionDecision.reasons[0]}
+            </div>
           </section>
         )}
 
