@@ -1,7 +1,7 @@
 import { Activity, BrainCircuit, Gauge, GitCompare, Radar, RotateCcw, Satellite, ShieldCheck, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import type { GeminiPlanTrace } from './ai/geminiPlan';
-import { requestGeminiPlan } from './ai/geminiPlan';
+import type { GeminiCritiqueTrace, GeminiPlanTrace } from './ai/geminiPlan';
+import { requestGeminiCritique, requestGeminiPlan } from './ai/geminiPlan';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
 import { runImprovementCycle } from './domain/improvement';
 import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
@@ -40,6 +40,10 @@ export function App() {
     status: 'idle',
     model: 'gemini-3.5-flash',
   });
+  const [geminiCritiqueTrace, setGeminiCritiqueTrace] = useState<GeminiCritiqueTrace>({
+    status: 'idle',
+    model: 'gemini-3.5-flash',
+  });
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
   const improvementCycle = useMemo(
@@ -68,12 +72,18 @@ export function App() {
       },
       {
         ...traceEvents[2],
+        source: geminiCritiqueTrace.status === 'live' ? 'gemini-live' : geminiCritiqueTrace.status === 'loading' ? 'operator' : 'gemini-fallback',
+        status: geminiCritiqueTrace.status === 'loading' ? 'running' : geminiCritiqueTrace.status === 'live' ? 'complete' : 'blocked',
+        detail: getGeminiCritiqueDetail(geminiCritiqueTrace),
+      },
+      {
+        ...traceEvents[3],
         status: 'complete',
         detail: `App-owned evaluator swept ${scenarios.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`,
       },
-      traceEvents[3],
+      traceEvents[4],
     ],
-    [activeScenario, geminiPlanTrace, improvementCycle.averageDelta, improvementCycle.promoted],
+    [activeScenario, geminiCritiqueTrace, geminiPlanTrace, improvementCycle.averageDelta, improvementCycle.promoted],
   );
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
@@ -84,6 +94,7 @@ export function App() {
     let isCurrent = true;
 
     setGeminiPlanTrace({ status: 'loading', model: 'gemini-3.5-flash' });
+    setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     requestGeminiPlan({
       scenario: activeScenario,
       baselinePolicy: currentPolicy,
@@ -92,6 +103,25 @@ export function App() {
     }).then((trace) => {
       if (isCurrent) {
         setGeminiPlanTrace(trace);
+      }
+    });
+    requestGeminiCritique({
+      scenario: activeScenario,
+      baselinePolicy: currentPolicy,
+      candidatePolicy,
+      baselineScore,
+      candidateScore,
+      mutation: improvementCycle.mutation,
+      scenarioResults: improvementCycle.scenarioResults,
+      promotionDecision: {
+        promoted: improvementCycle.promoted,
+        averageDelta: improvementCycle.averageDelta,
+        reasons: improvementCycle.reasons,
+        scenarioCount: scenarios.length,
+      },
+    }).then((trace) => {
+      if (isCurrent) {
+        setGeminiCritiqueTrace(trace);
       }
     });
 
@@ -205,7 +235,7 @@ export function App() {
                 Gemini trace status
               </div>
               <div className="trace-list compact">
-                {runtimeTraceEvents.slice(0, 3).map((event) => (
+                {runtimeTraceEvents.slice(0, 4).map((event) => (
                   <div className="trace-row" key={event.id}>
                     <span>{event.label}</span>
                     <strong>{event.status}</strong>
@@ -363,7 +393,7 @@ export function App() {
                 <Metric label="Model" value={geminiPlanTrace.model} />
                 <Metric label="Status" value={geminiPlanTrace.status} />
                 <Metric label="Confidence" value={String(geminiPlanTrace.plan?.confidence ?? '--')} />
-                <Metric label="Latency" value={geminiPlanTrace.latencyMs ? `${geminiPlanTrace.latencyMs} ms` : '--'} />
+                <Metric label="Latency" value={formatLatency(geminiPlanTrace)} />
               </div>
               {geminiPlanTrace.plan && (
                 <div className="diff-list">
@@ -381,6 +411,40 @@ export function App() {
                 <div>
                   <p className="eyebrow">Model output preview</p>
                   <pre>{geminiPlanTrace.outputText ?? geminiPlanTrace.error ?? 'No model output captured yet.'}</pre>
+                </div>
+              </div>
+            </article>
+            <article className="gemini-output critique-output">
+              <div>
+                <p className="eyebrow">Gemini improvement critique</p>
+                <h3>{geminiCritiqueTrace.status === 'live' ? 'Critique received' : 'Critique fallback'}</h3>
+                <p>{geminiCritiqueTrace.critique?.summary ?? geminiCritiqueTrace.error ?? 'Waiting for Gemini critique.'}</p>
+              </div>
+              <div className="score-grid">
+                <Metric label="Model" value={geminiCritiqueTrace.model} />
+                <Metric label="Status" value={geminiCritiqueTrace.status} />
+                <Metric label="Recommendation" value={geminiCritiqueTrace.critique?.promotionRecommendation ?? '--'} />
+                <Metric label="Latency" value={formatLatency(geminiCritiqueTrace)} />
+              </div>
+              {geminiCritiqueTrace.critique && (
+                <div className="diff-list">
+                  {geminiCritiqueTrace.critique.failureAnalysis.map((line) => (
+                    <code key={line}>failure: {line}</code>
+                  ))}
+                  <code>experiment: {geminiCritiqueTrace.critique.proposedExperiment}</code>
+                  <code>metric move: {geminiCritiqueTrace.critique.expectedMetricMove}</code>
+                  <code>guardrails: {geminiCritiqueTrace.critique.guardrailConcerns.join(', ')}</code>
+                  <code>judge note: {geminiCritiqueTrace.critique.judgeNarrative}</code>
+                </div>
+              )}
+              <div className="trace-preview-grid">
+                <div>
+                  <p className="eyebrow">Critique prompt preview</p>
+                  <pre>{geminiCritiqueTrace.promptPreview ?? 'No critique prompt context captured yet.'}</pre>
+                </div>
+                <div>
+                  <p className="eyebrow">Critique output preview</p>
+                  <pre>{geminiCritiqueTrace.outputText ?? geminiCritiqueTrace.error ?? 'No critique output captured yet.'}</pre>
                 </div>
               </div>
             </article>
@@ -439,4 +503,28 @@ function getGeminiTraceDetail(trace: GeminiPlanTrace): string {
   }
 
   return 'Gemini trace has not started yet.';
+}
+
+function getGeminiCritiqueDetail(trace: GeminiCritiqueTrace): string {
+  if (trace.status === 'loading') {
+    return 'Gemini 3.5 Flash is critiquing deterministic evaluator results.';
+  }
+
+  if (trace.status === 'live') {
+    return `Gemini critique recommends ${trace.critique?.promotionRecommendation ?? 'review'} and proposes ${trace.critique?.proposedExperiment ?? 'a follow-up experiment'}.`;
+  }
+
+  if (trace.error) {
+    return `Gemini critique path is blocked, so fallback critique is labeled: ${trace.error}`;
+  }
+
+  return 'Gemini critique has not started yet.';
+}
+
+function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace): string {
+  if (trace.cacheHit) {
+    return 'cache';
+  }
+
+  return trace.latencyMs ? `${trace.latencyMs} ms` : '--';
 }

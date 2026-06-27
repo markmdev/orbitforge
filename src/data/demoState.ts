@@ -173,6 +173,13 @@ export const traceEvents: TraceEvent[] = [
     detail: 'Live Gemini wiring will attach here; fallback trace is labeled until integration lands.',
   },
   {
+    id: 'trace-critique',
+    label: 'Gemini improvement critique',
+    source: 'gemini-fallback',
+    status: 'ready',
+    detail: 'Critique should connect deterministic failures to the next policy experiment.',
+  },
+  {
     id: 'trace-eval',
     label: 'Deterministic evaluator',
     source: 'deterministic',
