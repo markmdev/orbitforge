@@ -64,6 +64,7 @@ export function App() {
   const [computerAuditTrace, setComputerAuditTrace] = useState<GeminiComputerAuditTrace>({
     status: 'idle',
     model: 'gemini-3.5-flash',
+    executionMode: 'propose_only',
     actions: [],
   });
   const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
@@ -147,6 +148,8 @@ export function App() {
     setComputerAuditTrace({
       status: 'loading',
       model: 'gemini-3.5-flash',
+      executionMode: 'propose_only',
+      promptInjectionDetection: true,
       actions: [],
     });
 
@@ -598,6 +601,8 @@ export function App() {
                 <Metric label="Status" value={computerAuditTrace.status} />
                 <Metric label="Actions" value={String(computerAuditTrace.actions.length)} />
                 <Metric label="Latency" value={formatLatency(computerAuditTrace)} />
+                <Metric label="Mode" value={formatAuditMode(computerAuditTrace.executionMode)} />
+                <Metric label="Prompt guard" value={formatPromptGuard(computerAuditTrace.promptInjectionDetection)} />
               </div>
               {computerAuditTrace.actions.length > 0 && (
                 <div className="diff-list">
@@ -720,6 +725,14 @@ function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace | GeminiComp
   }
 
   return trace.latencyMs ? `${trace.latencyMs} ms` : '--';
+}
+
+function formatAuditMode(mode?: string): string {
+  return mode === 'propose_only' ? 'propose-only' : '--';
+}
+
+function formatPromptGuard(enabled?: boolean): string {
+  return enabled ? 'enabled' : '--';
 }
 
 function buildJudgeReport(input: {

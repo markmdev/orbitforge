@@ -31,5 +31,7 @@ clearly in the demo.
 - Computer-use audit follows the documented screenshot/action-loop concept but
   does not execute actions; it displays proposed actions or the exact API/quota
   blocker.
+- Computer-use audit enables the documented prompt-injection detection option
+  and keeps returned actions in propose-only mode.
 - The latest observed blocker was quota: `You do not have enough quota to make
   this request.` Keep this exact state visible if it recurs.

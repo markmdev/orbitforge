@@ -13,6 +13,8 @@ export type GeminiComputerAuditTrace = {
   promptPreview?: string;
   outputText?: string;
   cacheHit?: boolean;
+  executionMode?: string;
+  promptInjectionDetection?: boolean;
   actions: ComputerAuditAction[];
   error?: string;
 };
@@ -51,6 +53,8 @@ export async function requestGeminiComputerAudit(
       promptPreview: body.promptPreview,
       outputText: body.outputText,
       cacheHit: body.cacheHit,
+      executionMode: typeof body.executionMode === 'string' ? body.executionMode : undefined,
+      promptInjectionDetection: body.promptInjectionDetection === true ? true : undefined,
       actions: normalizeAuditActions(body.actions),
     };
   } catch (error) {
@@ -91,6 +95,8 @@ function fallbackComputerAuditTrace(
     promptPreview: partial?.promptPreview,
     outputText: partial?.outputText,
     cacheHit: partial?.cacheHit,
+    executionMode: partial?.executionMode,
+    promptInjectionDetection: partial?.promptInjectionDetection,
     error,
     actions: normalizeAuditActions(partial?.actions).length > 0
       ? normalizeAuditActions(partial?.actions)

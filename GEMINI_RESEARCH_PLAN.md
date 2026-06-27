@@ -43,6 +43,8 @@ capability, not a wrapper.
   a local PNG audit frame from current seeded state, sends it with the
   `computer_use` browser tool configured, and displays proposed actions without
   executing them.
+- The computer-use audit enables documented prompt-injection detection and
+  treats screen text as untrusted page content.
 - Routine verification should use `npm run verify:runtime`, which checks app
   shell and Gemini configured-state health without spending live model calls.
   Use `npm run verify:gemini` only when fresh live proof is worth the
