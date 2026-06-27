@@ -1,5 +1,7 @@
 import { Activity, BrainCircuit, Gauge, GitCompare, Radar, RotateCcw, Satellite, ShieldCheck, Sparkles } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { GeminiPlanTrace } from './ai/geminiPlan';
+import { requestGeminiPlan } from './ai/geminiPlan';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
 import { runImprovementCycle } from './domain/improvement';
 import type { FleetStatus } from './domain/types';
@@ -23,9 +25,16 @@ const statusCopy: Record<FleetStatus, string> = {
 export function App() {
   const [activeView, setActiveView] = useState<View>('console');
   const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
+  const [geminiPlanTrace, setGeminiPlanTrace] = useState<GeminiPlanTrace>({
+    status: 'idle',
+    model: 'gemini-3.5-flash',
+  });
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
-  const improvementCycle = runImprovementCycle(activeScenario, currentPolicy, scenarios, orbitalNodes, groundStations);
+  const improvementCycle = useMemo(
+    () => runImprovementCycle(activeScenario, currentPolicy, scenarios, orbitalNodes, groundStations),
+    [activeScenario, currentPolicy],
+  );
   const candidatePolicy = improvementCycle.mutation.candidatePolicy;
   const primaryResult =
     improvementCycle.scenarioResults.find((result) => result.scenarioId === activeScenario.id) ??
@@ -37,6 +46,26 @@ export function App() {
     setActiveScenarioId(scenarios[0].id);
     setActiveView('console');
   };
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    setGeminiPlanTrace({ status: 'loading', model: 'gemini-3.5-flash' });
+    requestGeminiPlan({
+      scenario: activeScenario,
+      baselinePolicy: currentPolicy,
+      baselineScore,
+      mutation: improvementCycle.mutation,
+    }).then((trace) => {
+      if (isCurrent) {
+        setGeminiPlanTrace(trace);
+      }
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [activeScenario.id]);
 
   return (
     <main className="app-shell">
@@ -143,7 +172,15 @@ export function App() {
                 Gemini trace status
               </div>
               <div className="trace-list compact">
-                {traceEvents.slice(0, 3).map((event) => (
+                {[
+                  traceEvents[0],
+                  {
+                    ...traceEvents[1],
+                    source: geminiPlanTrace.status === 'live' ? 'gemini-live' : 'gemini-fallback',
+                    status: geminiPlanTrace.status === 'loading' ? 'running' : geminiPlanTrace.status === 'live' ? 'complete' : 'blocked',
+                  } as const,
+                  traceEvents[2],
+                ].map((event) => (
                   <div className="trace-row" key={event.id}>
                     <span>{event.label}</span>
                     <strong>{event.status}</strong>
@@ -257,6 +294,27 @@ export function App() {
               <Sparkles size={18} />
               Inspectable Gemini and eval trace
             </div>
+            <article className="gemini-output">
+              <div>
+                <p className="eyebrow">Live operator plan</p>
+                <h3>{geminiPlanTrace.status === 'live' ? 'Gemini plan received' : 'Gemini plan fallback'}</h3>
+                <p>{geminiPlanTrace.plan?.rationale ?? geminiPlanTrace.error ?? 'Waiting for Gemini operator plan.'}</p>
+              </div>
+              <div className="score-grid">
+                <Metric label="Model" value={geminiPlanTrace.model} />
+                <Metric label="Status" value={geminiPlanTrace.status} />
+                <Metric label="Confidence" value={String(geminiPlanTrace.plan?.confidence ?? '--')} />
+                <Metric label="Latency" value={geminiPlanTrace.latencyMs ? `${geminiPlanTrace.latencyMs} ms` : '--'} />
+              </div>
+              {geminiPlanTrace.plan && (
+                <div className="diff-list">
+                  <code>placement: {geminiPlanTrace.plan.placement}</code>
+                  <code>constraints: {geminiPlanTrace.plan.constraintsUsed.join(', ')}</code>
+                  <code>risks: {geminiPlanTrace.plan.risks.join(', ')}</code>
+                  <code>policy patch: {geminiPlanTrace.plan.recommendedPolicyPatch}</code>
+                </div>
+              )}
+            </article>
             <div className="trace-list">
               {traceEvents.map((event) => (
                 <article className="trace-card" key={event.id}>
