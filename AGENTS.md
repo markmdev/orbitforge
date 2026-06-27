@@ -73,8 +73,15 @@ orbital-compute operations agent improve itself over repeated simulated use.
 - Before starting a 24-hour timed execution run, read `RUNBOOK_24H.md`,
   `TOOLS_AND_ACCESS.md`, `LINEAR_PLAN.md`, `THREAD_ORCHESTRATION.md`,
   `EVAL_PLAN.md`, and `QA_MATRIX.md`.
+- Use `chrome:control-chrome` or `browser:control-in-app-browser` for browser
+  work. For the local app, prefer the in-app browser controller; use Chrome
+  when existing Chrome profile state is required.
 - Use a real browser for UI verification once an app exists; screenshots or
-  script-only checks are not enough.
+  script-only checks are not enough. Verify real clicks, state changes, and
+  visible trace output.
+- Keep ergonomics and observability healthy while building: inspect browser
+  console logs, keep tests/build/runtime verification easy to run, and improve
+  tooling immediately when weak tooling makes QA or PM control unreliable.
 
 ## Stop Conditions
 

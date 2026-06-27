@@ -242,10 +242,30 @@ If progress slows, quality drops, or coordination starts producing noise:
 5. narrow a feature until it is provable;
 6. add a review or QA pass where defects are slipping through;
 7. update the owner doc that future work will read;
-8. continue building.
+8. repair missing ergonomics or observability: browser control, console logs,
+   tests, build, runtime probes, dev-server visibility, or API health checks;
+9. continue building.
 
 The only bad move is to keep following an operating model that is no longer
 serving the demo.
+
+## Always-On Verification Handles
+
+During implementation, keep these surfaces available and working:
+
+- `npm test` for deterministic domain and Gemini contract behavior.
+- `npm run build` for production TypeScript/Vite correctness.
+- `npm run verify:runtime` against the active local dev server for app-shell and
+  Gemini middleware configured-state health without consuming a live model call.
+- `npm run verify:gemini` when live Gemini proof is required and the current
+  quota/rate-limit state makes that worth doing.
+- `browser:control-in-app-browser` for local UI interaction, including real
+  clicks, reset checks, view checks, and browser console logs.
+- `chrome:control-chrome` when the task depends on Mark's existing Chrome
+  profile state, such as Linear, AI Studio, or logged-in account surfaces.
+
+If one of these handles breaks, fix it or record the blocker before relying on
+weaker proof.
 
 ## Stop Rules During the 24-Hour Goal
 

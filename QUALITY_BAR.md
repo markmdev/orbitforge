@@ -64,6 +64,13 @@ better owner, or be removed.
   any non-obvious state transitions.
 - No placeholder source, fake TODO feature, dead button, or unexplained mock
   should survive into the final demo path.
+- Runtime ergonomics are part of quality: the Controller should be able to run
+  `npm test`, `npm run build`, `npm run verify:runtime`, inspect browser
+  console logs, and use a browser controller without improvising new proof
+  every time. Use `npm run verify:gemini` only when a live model call is worth
+  the quota/rate-limit cost.
+- If browser control, logs, tests, or runtime checks are broken, fix that system
+  or escalate the exact blocker before doing fragile feature work on top of it.
 
 ### Design
 
@@ -115,6 +122,8 @@ Stop and improve the system when any of these are true:
 - A doc controls implementation but cannot answer obvious builder questions.
 - A specialist output is accepted because it exists, not because it is good.
 - The current plan protects process over product quality.
+- The Controller cannot comfortably operate the app, inspect logs, or verify
+  runtime behavior.
 
 ## Final Standard
 

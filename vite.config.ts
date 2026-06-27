@@ -11,6 +11,26 @@ export default defineConfig(({ mode }) => {
       {
         name: 'orbitforge-gemini-api',
         configureServer(server) {
+          server.middlewares.use('/api/gemini/health', async (req, res) => {
+            if (req.method !== 'GET') {
+              res.statusCode = 405;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ ok: false, status: 'blocked', error: 'GET required' }));
+              return;
+            }
+
+            res.statusCode = geminiApiKey ? 200 : 503;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(
+              JSON.stringify({
+                ok: Boolean(geminiApiKey),
+                status: geminiApiKey ? 'configured' : 'blocked',
+                model: 'gemini-3.5-flash',
+                liveCallRequired: false,
+              }),
+            );
+          });
+
           server.middlewares.use('/api/gemini/plan', async (req, res) => {
             if (req.method !== 'POST') {
               res.statusCode = 405;

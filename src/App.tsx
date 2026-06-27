@@ -4,7 +4,7 @@ import type { GeminiPlanTrace } from './ai/geminiPlan';
 import { requestGeminiPlan } from './ai/geminiPlan';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
 import { runImprovementCycle } from './domain/improvement';
-import type { FleetStatus } from './domain/types';
+import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
 
 type View = 'console' | 'scenario' | 'evaluation' | 'policy' | 'trace';
 
@@ -21,6 +21,17 @@ const statusCopy: Record<FleetStatus, string> = {
   watch: 'Watch',
   degraded: 'Degraded',
 };
+
+const scoreDimensionLabels: Array<{ key: ScoreDimension; label: string }> = [
+  { key: 'freshness', label: 'Freshness' },
+  { key: 'power', label: 'Power' },
+  { key: 'thermal', label: 'Thermal' },
+  { key: 'contact', label: 'Contact' },
+  { key: 'dataReduction', label: 'Data reduction' },
+  { key: 'risk', label: 'Risk' },
+  { key: 'explanation', label: 'Explanation' },
+  { key: 'guardrail', label: 'Guardrail' },
+];
 
 export function App() {
   const [activeView, setActiveView] = useState<View>('console');
@@ -42,6 +53,28 @@ export function App() {
   const baselineScore = primaryResult.baselineScore;
   const candidateScore = primaryResult.candidateScore;
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
+  const runtimeTraceEvents = useMemo<TraceEvent[]>(
+    () => [
+      {
+        ...traceEvents[0],
+        status: 'complete',
+        detail: `${activeScenario.name} loaded with ${activeScenario.rawGb} GB raw input and a ${activeScenario.freshnessMinutes} minute freshness target.`,
+      },
+      {
+        ...traceEvents[1],
+        source: geminiPlanTrace.status === 'live' ? 'gemini-live' : geminiPlanTrace.status === 'loading' ? 'operator' : 'gemini-fallback',
+        status: geminiPlanTrace.status === 'loading' ? 'running' : geminiPlanTrace.status === 'live' ? 'complete' : 'blocked',
+        detail: getGeminiTraceDetail(geminiPlanTrace),
+      },
+      {
+        ...traceEvents[2],
+        status: 'complete',
+        detail: `App-owned evaluator swept ${scenarios.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`,
+      },
+      traceEvents[3],
+    ],
+    [activeScenario, geminiPlanTrace, improvementCycle.averageDelta, improvementCycle.promoted],
+  );
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
     setActiveView('console');
@@ -172,15 +205,7 @@ export function App() {
                 Gemini trace status
               </div>
               <div className="trace-list compact">
-                {[
-                  traceEvents[0],
-                  {
-                    ...traceEvents[1],
-                    source: geminiPlanTrace.status === 'live' ? 'gemini-live' : 'gemini-fallback',
-                    status: geminiPlanTrace.status === 'loading' ? 'running' : geminiPlanTrace.status === 'live' ? 'complete' : 'blocked',
-                  } as const,
-                  traceEvents[2],
-                ].map((event) => (
+                {runtimeTraceEvents.slice(0, 3).map((event) => (
                   <div className="trace-row" key={event.id}>
                     <span>{event.label}</span>
                     <strong>{event.status}</strong>
@@ -226,17 +251,51 @@ export function App() {
           <section className="panel full-panel">
             <div className="panel-title">
               <ShieldCheck size={18} />
-              Deterministic scorecard shell
+              Deterministic evaluation harness
+            </div>
+            <div className="evaluation-summary">
+              <article>
+                <p className="eyebrow">Active incident delta</p>
+                <strong>{signedDelta(primaryResult.decision.delta)}</strong>
+                <span>{primaryResult.decision.reasons[0]}</span>
+              </article>
+              <article>
+                <p className="eyebrow">Promotion gate</p>
+                <strong>{improvementCycle.promoted ? 'Accepted' : 'Held'}</strong>
+                <span>{improvementCycle.reasons[improvementCycle.reasons.length - 1]}</span>
+              </article>
+              <article>
+                <p className="eyebrow">Golden sweep</p>
+                <strong>{signedDelta(improvementCycle.averageDelta)}</strong>
+                <span>{scenarios.length} seeded scenarios checked for regression.</span>
+              </article>
             </div>
             <div className="score-grid">
-              <Metric label="Freshness" value={String(baselineScore.dimensions.freshness)} />
-              <Metric label="Power" value={String(baselineScore.dimensions.power)} />
-              <Metric label="Thermal" value={String(baselineScore.dimensions.thermal)} />
-              <Metric label="Contact" value={String(baselineScore.dimensions.contact)} />
-              <Metric label="Data reduction" value={String(baselineScore.dimensions.dataReduction)} />
-              <Metric label="Risk" value={String(baselineScore.dimensions.risk)} />
-              <Metric label="Explanation" value={String(baselineScore.dimensions.explanation)} />
-              <Metric label="Guardrail" value={String(baselineScore.dimensions.guardrail)} />
+              {scoreDimensionLabels.map((dimension) => (
+                <Metric
+                  key={dimension.key}
+                  label={dimension.label}
+                  value={`${baselineScore.dimensions[dimension.key]} -> ${candidateScore.dimensions[dimension.key]}`}
+                />
+              ))}
+            </div>
+            <p className="eyebrow sweep-label">Golden scenario sweep</p>
+            <div className="scenario-table compact-table">
+              {improvementCycle.scenarioResults.map((result) => {
+                const scenario = scenarios.find((item) => item.id === result.scenarioId);
+
+                return (
+                  <article className="score-sweep-row" key={result.scenarioId}>
+                    <div>
+                      <strong>{scenario?.name ?? result.scenarioId}</strong>
+                      <span>{result.candidateScore.failures.length > 0 ? result.candidateScore.failures.join(', ') : 'No candidate failures below threshold.'}</span>
+                    </div>
+                    <Metric label="Baseline" value={String(result.baselineScore.total)} />
+                    <Metric label="Candidate" value={String(result.candidateScore.total)} />
+                    <Metric label="Delta" value={signedDelta(result.decision.delta)} />
+                  </article>
+                );
+              })}
             </div>
             <p className="risk-note">Promotion will be decided by app-owned deterministic scores, not Gemini self-grading.</p>
           </section>
@@ -246,7 +305,7 @@ export function App() {
           <section className="panel full-panel">
             <div className="panel-title">
               <GitCompare size={18} />
-              Policy mutation preview
+              Candidate policy patch
             </div>
             <div className="policy-diff">
               <div>
@@ -326,7 +385,7 @@ export function App() {
               </div>
             </article>
             <div className="trace-list">
-              {traceEvents.map((event) => (
+              {runtimeTraceEvents.map((event) => (
                 <article className="trace-card" key={event.id}>
                   <div>
                     <strong>{event.label}</strong>
@@ -360,4 +419,24 @@ function Metric({ label, value }: { label: string; value: string }) {
       <strong>{value}</strong>
     </div>
   );
+}
+
+function signedDelta(value: number): string {
+  return `${value > 0 ? '+' : ''}${value}`;
+}
+
+function getGeminiTraceDetail(trace: GeminiPlanTrace): string {
+  if (trace.status === 'loading') {
+    return 'Gemini 3.5 Flash request is running against the seeded scenario context.';
+  }
+
+  if (trace.status === 'live') {
+    return `Gemini 3.5 Flash returned a ${trace.plan?.placement ?? 'plan'} recommendation with confidence ${trace.plan?.confidence ?? '--'}.`;
+  }
+
+  if (trace.error) {
+    return `Gemini live path is blocked, so the app is showing a labeled fallback: ${trace.error}`;
+  }
+
+  return 'Gemini trace has not started yet.';
 }
