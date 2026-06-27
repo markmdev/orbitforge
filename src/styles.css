@@ -189,6 +189,47 @@ h3 {
   align-items: center;
 }
 
+.next-action-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid rgba(76, 199, 163, 0.28);
+  background: rgba(76, 199, 163, 0.08);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.next-action-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.next-action-copy strong {
+  font-size: 1.08rem;
+}
+
+.next-action-copy span,
+.next-action-progress span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.next-action-progress {
+  min-width: 86px;
+  display: grid;
+  gap: 2px;
+}
+
+.next-action-progress strong {
+  font-size: 1.2rem;
+}
+
+.next-action-button {
+  min-width: 142px;
+}
+
 .view-grid {
   display: grid;
   gap: 16px;
@@ -919,6 +960,7 @@ h3 {
 
   .topbar,
   .topbar-actions,
+  .next-action-strip,
   .audit-header,
   .command-button,
   .node-row,
@@ -938,6 +980,14 @@ h3 {
   .work-item-controls {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .next-action-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .next-action-button {
+    width: 100%;
   }
 
   .manifest-header {

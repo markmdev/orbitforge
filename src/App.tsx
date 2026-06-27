@@ -253,6 +253,7 @@ export function App() {
     ],
   );
   const completedWorkItems = workQueue.filter((item) => item.complete).length;
+  const nextWorkItem = workQueue.find((item) => !item.complete);
   const totalRawGb = useMemo(() => scenarioLibrary.reduce((sum, scenario) => sum + scenario.rawGb, 0), [scenarioLibrary]);
   const runtimeTraceEvents = useMemo<TraceEvent[]>(
     () => [
@@ -693,7 +694,38 @@ export function App() {
         )}
 
         {activeView === 'console' && (
-          <div className="view-grid console-grid">
+          <>
+            <section className="next-action-strip" aria-label="Next operator action">
+              <div className="next-action-copy">
+                <p className="eyebrow">{nextWorkItem ? 'Next operator action' : 'Demo loop ready'}</p>
+                <strong>{nextWorkItem?.label ?? 'Judge report exported'}</strong>
+                <span>
+                  {nextWorkItem
+                    ? nextWorkItem.actionDisabled && nextWorkItem.gate
+                      ? nextWorkItem.gate
+                      : nextWorkItem.detail
+                    : 'All workflow proof is complete and ready for the judge report.'}
+                </span>
+              </div>
+              <div className="next-action-progress">
+                <span>Queue</span>
+                <strong>{completedWorkItems}/{workQueue.length}</strong>
+              </div>
+              <button
+                className="queue-action next-action-button"
+                type="button"
+                onClick={() => {
+                  if (nextWorkItem?.action) {
+                    runWorkQueueAction(nextWorkItem.action);
+                  }
+                }}
+                disabled={!nextWorkItem?.action || nextWorkItem.actionDisabled}
+              >
+                {nextWorkItem?.actionLabel ?? 'Loop ready'}
+              </button>
+            </section>
+
+            <div className="view-grid console-grid">
             <section className="panel hero-panel">
               <div className="panel-title">
                 <Radar size={18} />
@@ -955,6 +987,7 @@ export function App() {
               </div>
             </section>
           </div>
+          </>
         )}
 
         {activeView === 'scenario' && (

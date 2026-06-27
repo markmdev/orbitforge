@@ -24,6 +24,7 @@ fleet:
 - agent version and improvement score.
 - active policy state and operator activity log.
 - incident work queue with readiness status driven by completed app actions.
+- first-viewport next-action strip derived from the same work queue.
 - scenario-aware incident command deck that changes seeded readiness state.
 - seeded stress-drill generator that appends a what-if scenario to the current
   scenario library.

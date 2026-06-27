@@ -14,23 +14,24 @@ repeated simulated incidents.
 2. Point to the active seeded fleet, current policy version, and improvement
    proof.
 3. Trigger `Wildfire SAR Rapid Response`.
-4. Generate a stress drill from the active scenario and show the scenario
+4. Point to the first-viewport `Next operator action` strip.
+5. Generate a stress drill from the active scenario and show the scenario
    library/eval set expanding.
-5. Apply the incident command deck and show seeded readiness improving.
-6. Show Gemini's initial operational plan.
-7. Show the deterministic evaluator catching a weakness.
-8. Show the improvement pass.
-9. Show Gemini's critique and the app-generated policy mutation.
-10. Show A/B score improvement and policy diff.
-11. Show the learning-memory writeback from failure signature to candidate
+6. Apply the incident command deck and show seeded readiness improving.
+7. Show Gemini's initial operational plan.
+8. Show the deterministic evaluator catching a weakness.
+9. Show the improvement pass.
+10. Show Gemini's critique and the app-generated policy mutation.
+11. Show A/B score improvement and policy diff.
+12. Show the learning-memory writeback from failure signature to candidate
    patch.
-12. Click `Promote candidate` and show the active policy and operations log
+13. Click `Promote candidate` and show the active policy and operations log
     change.
-13. Use the incident work queue action rail to run the mission plan, audit, and
-    report export.
-14. Show the queue moving from open tasks toward readiness.
-15. Show the guardrail canary rejecting an unsafe overclaiming mutation.
-16. Show Gemini computer-use audit result, including propose-only mode and
+14. Use the next-action strip or incident work queue action rail to run the
+    mission plan, audit, and report export.
+15. Show the queue moving from open tasks toward readiness.
+16. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+17. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
 
 Closing line:
@@ -219,6 +220,8 @@ Latest rehearsal proof:
   improvement pass, promotion, mission execution, audit result, and report
   export completed; unfinished rows exposed direct action buttons or short gate
   reasons; reset restored it to `1/7`.
+- First-viewport next-action strip started at `Start stabilization`, drove the
+  full workflow from Console, and ended at `Loop ready` with `7/7`.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only`, `Prompt guardenabled`, audit-frame
   `Candidate score: 85`, and `Promotion gate: accepted`.

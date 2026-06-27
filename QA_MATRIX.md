@@ -11,6 +11,7 @@ Last updated: 2026-06-27
 | Scenario | Run wildfire scenario | Active scenario, seeded telemetry, and workload appear |
 | Stress drill | Generate stress drill | Scenario library grows, generated drill is selected, reset restores original library |
 | Command deck | Apply incident commands | Readiness score rises, command buttons become applied, operations log records commands |
+| Next action | Use first-viewport command strip | Strip runs the next queue action and ends at `Loop ready` when the workflow reaches `7/7` |
 | Gemini plan | Generate plan | Plan appears with placement, reasoning, risk, confidence |
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
@@ -76,6 +77,8 @@ Current browser proof surfaces:
   report export, and resets to `1/7`. Queue rows expose actions for the next
   runnable step and gate mission/audit/report until their prerequisites are
   complete.
+- First-viewport next-action strip: starts with `Start stabilization`, can
+  drive the full workflow from Console, and ends at `Loop ready` with `7/7`.
 - Mobile command/queue proof: at `390x844`, command buttons and queue rows fit
   within `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Mobile runtime-health proof: at `390x844`, health strip fits within
