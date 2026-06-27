@@ -13,6 +13,7 @@ Last updated: 2026-06-27
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion |
+| Work queue | Complete demo actions | Readiness moves from `1/4` to `4/4` as promotion, report export, and audit run |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
 | Honesty | Inspect copy | Seeded/simulated labels are visible |
@@ -37,6 +38,9 @@ Current browser proof surfaces:
   `v0 deadline-first` to `v1 generated thermal-contact candidate`, updates
   active policy score from `70` to `85`, records `Candidate promoted` in the
   operations log, and `Reset demo` restores baseline state.
+- Incident work queue: starts at `1/4`, moves to `2/4` after promotion, `3/4`
+  after report export, `4/4` after audit fallback/live result, and resets to
+  `1/4`.
 - Computer-use audit: Trace and judge report surface propose-only mode,
   prompt-injection guard state, and exact quota blocker when quota blocks live
   output.

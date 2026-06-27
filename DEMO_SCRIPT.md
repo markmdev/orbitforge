@@ -23,8 +23,9 @@ repeated simulated incidents.
    patch.
 10. Click `Promote candidate` and show the active policy and operations log
     change.
-11. Show the guardrail canary rejecting an unsafe overclaiming mutation.
-12. Show Gemini computer-use audit result, including propose-only mode and
+11. Show the incident work queue moving from open tasks toward readiness.
+12. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+13. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
 
 Closing line:
@@ -87,6 +88,8 @@ Click `Promote candidate`, then show the Console:
 - active policy changes to `v1 generated thermal-contact candidate`;
 - active score changes from `70` to `85`;
 - operations log records `Candidate promoted`.
+- incident work queue moves from `1/4` to `2/4`, then to `3/4` after report
+  export and `4/4` after audit result.
 
 Show diff, score delta, and the fact that `Reset demo` restores the baseline.
 
@@ -135,12 +138,15 @@ Before handing the app to judges:
    and `Average sweep +11`.
 6. Click `Promote candidate`, confirm Console shows active policy score `85`,
    and confirm operations log includes `Candidate promoted`.
-7. Click `Reset demo`, confirm active policy score returns to `70`.
-8. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
+7. Confirm incident work queue reaches `4/4` after report export and audit
+   result.
+8. Click `Reset demo`, confirm active policy score returns to `70` and work
+   queue returns to `1/4`.
+9. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
-9. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+10. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
    live/fallback status for each Gemini surface.
-10. Confirm the audit surface or judge report shows `propose-only` mode and
+11. Confirm the audit surface or judge report shows `propose-only` mode and
    `Prompt-injection guard: enabled` after running audit.
 
 Latest rehearsal proof:
@@ -155,6 +161,8 @@ Latest rehearsal proof:
 - Policy Lab `Promote candidate` changed active policy to
   `v1 generated thermal-contact candidate`, updated active score from `70` to
   `85`, and wrote `Candidate promoted` to the operations log.
+- Incident work queue moved from `1/4` to `4/4` as promotion, report export,
+  and audit result completed; reset restored it to `1/4`.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only` and `Prompt guardenabled`.
 - Copy report included `Computer-use mode: propose-only`,

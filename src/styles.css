@@ -409,7 +409,8 @@ h3 {
 .node-list,
 .trace-list,
 .scenario-table,
-.activity-list {
+.activity-list,
+.work-queue-list {
   display: grid;
   gap: 10px;
 }
@@ -420,6 +421,7 @@ h3 {
 .score-sweep-row,
 .trace-card,
 .activity-row,
+.work-item,
 .ground-strip article {
   display: flex;
   justify-content: space-between;
@@ -448,12 +450,14 @@ h3 {
 .score-sweep-row div,
 .trace-card div,
 .activity-row div,
+.work-item div,
 .ground-strip article {
   display: grid;
   gap: 4px;
 }
 
-.activity-row span:not(.source-pill) {
+.activity-row span:not(.source-pill),
+.work-item span {
   color: var(--muted);
   font-size: 0.88rem;
 }
@@ -610,6 +614,13 @@ h3 {
   margin-top: 14px;
 }
 
+.queue-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .primary-action {
   border-color: rgba(125, 223, 140, 0.32);
   color: var(--green);
@@ -749,6 +760,7 @@ h3 {
   .node-row,
   .trace-row,
   .activity-row,
+  .work-item,
   .scenario-row,
   .score-sweep-row,
   .ground-strip article,
@@ -780,6 +792,7 @@ h3 {
   .policy-diff,
   .evaluation-summary,
   .score-grid,
+  .queue-summary,
   .trace-preview-grid {
     grid-template-columns: 1fr;
   }

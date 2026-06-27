@@ -35,6 +35,13 @@ type OperatorLogEntry = {
   detail: string;
 };
 
+type WorkQueueItem = {
+  id: string;
+  label: string;
+  detail: string;
+  complete: boolean;
+};
+
 const viewLabels: Array<{ id: View; label: string }> = [
   { id: 'console', label: 'Console' },
   { id: 'scenario', label: 'Scenario Lab' },
@@ -133,6 +140,36 @@ export function App() {
       decision: decidePromotion(baselineScore, unsafeScore),
     };
   }, [activeScenario, baselineScore, candidatePolicy]);
+  const workQueue = useMemo<WorkQueueItem[]>(
+    () => [
+      {
+        id: 'guardrail-canary',
+        label: 'Guardrail canary held',
+        detail: 'Unsafe overclaiming mutation was rejected by app-owned scores.',
+        complete: !guardrailCanary.decision.promoted,
+      },
+      {
+        id: 'promote-candidate',
+        label: 'Promote candidate policy',
+        detail: 'Make the thermal-contact candidate the active operator policy.',
+        complete: candidateAlreadyActive,
+      },
+      {
+        id: 'export-report',
+        label: 'Export judge report',
+        detail: 'Capture active policy, scores, Gemini state, and seeded-data guardrail.',
+        complete: judgeReport.length > 0,
+      },
+      {
+        id: 'audit-ui',
+        label: 'Run computer-use audit',
+        detail: 'Generate audit frame and request Gemini proposed QA actions or exact blocker.',
+        complete: computerAuditTrace.status !== 'idle' && computerAuditTrace.status !== 'loading',
+      },
+    ],
+    [candidateAlreadyActive, computerAuditTrace.status, guardrailCanary.decision.promoted, judgeReport.length],
+  );
+  const completedWorkItems = workQueue.filter((item) => item.complete).length;
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
   const runtimeTraceEvents = useMemo<TraceEvent[]>(
     () => [
@@ -435,6 +472,30 @@ export function App() {
               <div className="delta-banner">
                 {primaryResult.decision.delta > 0 ? '+' : ''}{primaryResult.decision.delta} points on active incident;
                 {' '}{improvementCycle.averageDelta > 0 ? '+' : ''}{improvementCycle.averageDelta} average across golden scenarios
+              </div>
+            </section>
+
+            <section className="panel work-queue-panel">
+              <div className="panel-title">
+                <ShieldCheck size={18} />
+                Incident work queue
+              </div>
+              <div className="queue-summary">
+                <Metric label="Readiness" value={`${completedWorkItems}/${workQueue.length}`} />
+                <Metric label="Active policy" value={candidateAlreadyActive ? 'Promoted' : 'Baseline'} />
+              </div>
+              <div className="work-queue-list">
+                {workQueue.map((item) => (
+                  <article className="work-item" key={item.id}>
+                    <div>
+                      <strong>{item.label}</strong>
+                      <span>{item.detail}</span>
+                    </div>
+                    <strong className={item.complete ? 'event-status complete' : 'event-status ready'}>
+                      {item.complete ? 'done' : 'open'}
+                    </strong>
+                  </article>
+                ))}
               </div>
             </section>
 

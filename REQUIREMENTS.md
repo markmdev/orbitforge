@@ -23,6 +23,7 @@ fleet:
 - active incidents;
 - agent version and improvement score.
 - active policy state and operator activity log.
+- incident work queue with readiness status driven by completed app actions.
 
 ### R2 - Scenario Runner
 
@@ -71,6 +72,8 @@ The system must show improvement over time:
   guardrails;
 - let the operator promote the candidate into active policy state;
 - record promotion/reset actions in an activity log;
+- track incident readiness from real app actions such as promotion, report
+  export, and audit result;
 - show before/after diff and score delta in the UI.
 
 ### R6 - Gemini In-App Runtime Integration
