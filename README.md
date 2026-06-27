@@ -3,6 +3,8 @@
 Hackathon project for a seeded, self-improving AI operations stack around
 space-based datacenter infrastructure.
 
+Public repo: https://github.com/markmdev/orbitforge
+
 Start here:
 
 - `HACKATHON.md` for theme and prize strategy.

@@ -19,7 +19,6 @@ Linear test result:
 
 GitHub plan:
 
-- create public repo `markmdev/orbitforge`;
+- public repo created at `https://github.com/markmdev/orbitforge`;
 - commit in small logical chunks;
 - never commit `.env.local`.
-
