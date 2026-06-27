@@ -282,7 +282,7 @@ export function App() {
           <span>{currentPolicy.summary}</span>
           <div className="score-chip">
             <Gauge size={16} />
-            Improvement score {baselineScore.total}
+            Active policy score {baselineScore.total}
           </div>
         </section>
       </aside>
