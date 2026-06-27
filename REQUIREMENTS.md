@@ -24,6 +24,7 @@ fleet:
 - agent version and improvement score.
 - active policy state and operator activity log.
 - incident work queue with readiness status driven by completed app actions.
+- scenario-aware incident command deck that changes seeded readiness state.
 
 ### R2 - Scenario Runner
 
@@ -72,8 +73,8 @@ The system must show improvement over time:
   guardrails;
 - let the operator promote the candidate into active policy state;
 - record promotion/reset actions in an activity log;
-- track incident readiness from real app actions such as promotion, report
-  export, and audit result;
+- track incident readiness from real app actions such as command application,
+  promotion, audit result, and report export;
 - show before/after diff and score delta in the UI.
 
 ### R6 - Gemini In-App Runtime Integration
@@ -134,12 +135,13 @@ The MVP is ready when a judge can watch one complete loop:
 
 1. open the console;
 2. select or trigger a scenario;
-3. see Gemini propose a plan;
-4. see deterministic evaluation score the plan;
-5. run a Gemini-powered improvement pass;
-6. compare old/new policy results;
-7. see a promoted policy version with score improvement and trace evidence;
-8. see Gemini computer-use audit evidence or a clearly marked unavailable
+3. apply incident commands and see seeded readiness change;
+4. see Gemini propose a plan;
+5. see deterministic evaluation score the plan;
+6. run a Gemini-powered improvement pass;
+7. compare old/new policy results;
+8. see a promoted policy version with score improvement and trace evidence;
+9. see Gemini computer-use audit evidence or a clearly marked unavailable
    integration fallback panel if API access fails during the hackathon.
 
 Current accepted fallback: if Gemini quota blocks a live call, the panel must

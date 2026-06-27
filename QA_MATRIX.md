@@ -9,11 +9,12 @@ Last updated: 2026-06-27
 | First load | Open app fresh | Console appears without setup confusion |
 | Reset | Reset demo state | Known baseline scenario and policy return |
 | Scenario | Run wildfire scenario | Active scenario, seeded telemetry, and workload appear |
+| Command deck | Apply incident commands | Readiness score rises, command buttons become applied, operations log records commands |
 | Gemini plan | Generate plan | Plan appears with placement, reasoning, risk, confidence |
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion |
-| Work queue | Complete demo actions | Readiness moves from `1/4` to `4/4` as promotion, report export, and audit run |
+| Work queue | Complete demo actions | Readiness moves from `1/5` to `5/5` as commands, promotion, audit run, and report export complete |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
 | Honesty | Inspect copy | Seeded/simulated labels are visible |
@@ -28,6 +29,9 @@ Current browser proof surfaces:
   without overlap.
 - In-app browser, mobile `390x844`: Console and active incident are visible in
   the first viewport; mobile nav is compact.
+- Incident command deck: applying the three wildfire commands changes incident
+  readiness from `45%` active to `82%` stabilized, disables applied command
+  buttons, and records operator log entries.
 - Gemini Trace: plan, critique, and computer-use audit panels preserve
   prompt/output previews and label live/fallback state.
 - Evaluation: guardrail canary is visible and blocks unsafe overclaiming
@@ -38,9 +42,11 @@ Current browser proof surfaces:
   `v0 deadline-first` to `v1 generated thermal-contact candidate`, updates
   active policy score from `70` to `85`, records `Candidate promoted` in the
   operations log, and `Reset demo` restores baseline state.
-- Incident work queue: starts at `1/4`, moves to `2/4` after promotion, `3/4`
-  after report export, `4/4` after audit fallback/live result, and resets to
-  `1/4`.
+- Incident work queue: starts at `1/5`, moves to `2/5` after incident
+  stabilization, `3/5` after promotion, `4/5` after audit fallback/live
+  result, `5/5` after report export, and resets to `1/5`.
+- Mobile command/queue proof: at `390x844`, command buttons and queue rows fit
+  within `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Computer-use audit: Trace and judge report surface propose-only mode,
   prompt-injection guard state, and exact quota blocker when quota blocks live
   output.

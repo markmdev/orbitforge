@@ -15,6 +15,9 @@ export type JudgeReportInput = {
   auditError?: string;
   auditExecutionMode?: string;
   auditPromptInjectionDetection?: boolean;
+  incidentReadinessScore?: number;
+  incidentReadinessLabel?: string;
+  appliedCommandLabels?: string[];
 };
 
 export function buildJudgeReport(input: JudgeReportInput): string {
@@ -36,6 +39,8 @@ export function buildJudgeReport(input: JudgeReportInput): string {
     `Baseline score: ${input.baselineScore}`,
     `Candidate policy: ${input.candidatePolicyName}`,
     `Candidate score: ${input.candidateScore}`,
+    `Incident readiness: ${formatIncidentReadiness(input.incidentReadinessScore, input.incidentReadinessLabel)}`,
+    `Commands applied: ${formatCommandLabels(input.appliedCommandLabels)}`,
     `Average sweep delta: ${signedDelta(input.averageDelta)}`,
     `Promotion gate: ${input.promoted ? 'accepted' : 'held'}`,
     '',
@@ -63,4 +68,20 @@ function signedDelta(value: number): string {
 
 function formatReportStatus(status: string, error?: string): string {
   return error ? `${status} (${error})` : status;
+}
+
+function formatIncidentReadiness(score?: number, label?: string): string {
+  if (typeof score !== 'number') {
+    return 'not captured';
+  }
+
+  return `${score}%${label ? ` (${label})` : ''}`;
+}
+
+function formatCommandLabels(labels?: string[]): string {
+  if (!labels || labels.length === 0) {
+    return 'none';
+  }
+
+  return labels.join(', ');
 }

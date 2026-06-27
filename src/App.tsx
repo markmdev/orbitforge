@@ -11,6 +11,7 @@ import {
   Satellite,
   ShieldCheck,
   Sparkles,
+  Wrench,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { buildAuditSnapshot } from './ai/auditSnapshot';
@@ -21,6 +22,7 @@ import { requestGeminiCritique, requestGeminiPlan } from './ai/geminiPlan';
 import { OrbitMap } from './components/OrbitMap';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
 import { decidePromotion, evaluatePlan } from './domain/evaluator';
+import { applyIncidentCommand, getIncidentCommands, summarizeIncidentCommands } from './domain/incidentActions';
 import { runImprovementCycle } from './domain/improvement';
 import { buildJudgeReport, formatAuditMode, formatPromptGuard } from './domain/judgeReport';
 import { runPolicyOnScenario } from './domain/scenarioRunner';
@@ -87,6 +89,7 @@ export function App() {
   const [activeView, setActiveView] = useState<View>('console');
   const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
   const [activePolicy, setActivePolicy] = useState(baselinePolicy);
+  const [appliedCommandIds, setAppliedCommandIds] = useState<string[]>([]);
   const [operatorLog, setOperatorLog] = useState<OperatorLogEntry[]>(initialOperatorLog);
   const [geminiPlanTrace, setGeminiPlanTrace] = useState<GeminiPlanTrace>({
     status: 'idle',
@@ -113,6 +116,11 @@ export function App() {
   const candidatePolicy = improvementCycle.mutation.candidatePolicy;
   const candidateAlreadyActive = activePolicy.id === candidatePolicy.id;
   const canPromoteCandidate = improvementCycle.promoted && !candidateAlreadyActive;
+  const incidentCommands = useMemo(() => getIncidentCommands(activeScenario), [activeScenario]);
+  const incidentCommandSummary = useMemo(
+    () => summarizeIncidentCommands(activeScenario, appliedCommandIds),
+    [activeScenario, appliedCommandIds],
+  );
   const primaryResult =
     improvementCycle.scenarioResults.find((result) => result.scenarioId === activeScenario.id) ??
     improvementCycle.scenarioResults[0];
@@ -149,16 +157,16 @@ export function App() {
         complete: !guardrailCanary.decision.promoted,
       },
       {
+        id: 'stabilize-incident',
+        label: 'Stabilize active incident',
+        detail: 'Apply the scenario command deck until readiness reaches stabilized state.',
+        complete: incidentCommandSummary.stabilized,
+      },
+      {
         id: 'promote-candidate',
         label: 'Promote candidate policy',
         detail: 'Make the thermal-contact candidate the active operator policy.',
         complete: candidateAlreadyActive,
-      },
-      {
-        id: 'export-report',
-        label: 'Export judge report',
-        detail: 'Capture active policy, scores, Gemini state, and seeded-data guardrail.',
-        complete: judgeReport.length > 0,
       },
       {
         id: 'audit-ui',
@@ -166,8 +174,20 @@ export function App() {
         detail: 'Generate audit frame and request Gemini proposed QA actions or exact blocker.',
         complete: computerAuditTrace.status !== 'idle' && computerAuditTrace.status !== 'loading',
       },
+      {
+        id: 'export-report',
+        label: 'Export judge report',
+        detail: 'Capture active policy, scores, Gemini state, and seeded-data guardrail.',
+        complete: judgeReport.length > 0,
+      },
     ],
-    [candidateAlreadyActive, computerAuditTrace.status, guardrailCanary.decision.promoted, judgeReport.length],
+    [
+      candidateAlreadyActive,
+      computerAuditTrace.status,
+      guardrailCanary.decision.promoted,
+      incidentCommandSummary.stabilized,
+      judgeReport.length,
+    ],
   );
   const completedWorkItems = workQueue.filter((item) => item.complete).length;
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
@@ -207,6 +227,7 @@ export function App() {
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
     setActivePolicy(baselinePolicy);
+    setAppliedCommandIds([]);
     setOperatorLog([
       {
         id: `log-reset-${Date.now()}`,
@@ -243,6 +264,24 @@ export function App() {
     ]);
     setActiveView('console');
   };
+  const applyCommandToIncident = (commandId: string) => {
+    const command = incidentCommands.find((item) => item.id === commandId);
+
+    if (!command || appliedCommandIds.includes(commandId)) {
+      return;
+    }
+
+    setAppliedCommandIds((ids) => applyIncidentCommand(activeScenario, ids, commandId));
+    setOperatorLog((entries) => [
+      {
+        id: `log-command-${commandId}-${Date.now()}`,
+        source: 'operator',
+        label: 'Incident command applied',
+        detail: `${command.label}: ${command.detail} (${command.impactLabel}).`,
+      },
+      ...entries,
+    ]);
+  };
   const copyJudgeReport = async () => {
     const report = buildJudgeReport({
       activeScenarioName: activeScenario.name,
@@ -261,6 +300,9 @@ export function App() {
       auditError: computerAuditTrace.error,
       auditExecutionMode: computerAuditTrace.executionMode,
       auditPromptInjectionDetection: computerAuditTrace.promptInjectionDetection,
+      incidentReadinessScore: incidentCommandSummary.readinessScore,
+      incidentReadinessLabel: incidentCommandSummary.readinessLabel,
+      appliedCommandLabels: incidentCommandSummary.appliedCommands.map((command) => command.label),
     });
     setJudgeReport(report);
 
@@ -442,6 +484,53 @@ export function App() {
               />
             </section>
 
+            <section className="panel command-panel">
+              <div className="panel-title">
+                <Wrench size={18} />
+                Incident command deck
+              </div>
+              <div className="command-summary">
+                <Metric label="Readiness" value={`${incidentCommandSummary.readinessScore}%`} />
+                <Metric label="Commands" value={`${incidentCommandSummary.appliedCommands.length}/${incidentCommands.length}`} />
+                <Metric label="State" value={incidentCommandSummary.readinessLabel} />
+              </div>
+              <div className="readiness-meter" aria-label={`Incident readiness ${incidentCommandSummary.readinessScore}%`}>
+                <span style={{ width: `${incidentCommandSummary.readinessScore}%` }} />
+              </div>
+              <div className="command-actions">
+                {incidentCommands.map((command) => {
+                  const applied = appliedCommandIds.includes(command.id);
+
+                  return (
+                    <button
+                      className={applied ? 'command-button applied' : 'command-button'}
+                      disabled={applied}
+                      key={command.id}
+                      onClick={() => applyCommandToIncident(command.id)}
+                      type="button"
+                    >
+                      <div>
+                        <strong>{command.label}</strong>
+                        <span>{command.detail}</span>
+                      </div>
+                      <span className={applied ? 'event-status complete' : 'event-status ready'}>
+                        {applied ? 'applied' : command.impactLabel}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className={incidentCommandSummary.stabilized ? 'delta-banner memory-banner' : 'delta-banner'}>
+                <strong>{incidentCommandSummary.stabilized ? 'Incident stabilized' : 'Incident still active'}</strong>
+                <span>
+                  {' '}
+                  {incidentCommandSummary.remainingRisks.length > 0
+                    ? `Remaining weak metrics: ${incidentCommandSummary.remainingRisks.join(', ')}.`
+                    : 'All command metrics are above risk threshold.'}
+                </span>
+              </div>
+            </section>
+
             <section className="panel">
               <div className="panel-title">
                 <Activity size={18} />
@@ -551,6 +640,7 @@ export function App() {
                   type="button"
                   onClick={() => {
                     setActiveScenarioId(scenario.id);
+                    setAppliedCommandIds([]);
                     setOperatorLog((entries) => [
                       {
                         id: `log-scenario-${scenario.id}-${Date.now()}`,

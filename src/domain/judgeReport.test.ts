@@ -19,10 +19,15 @@ describe('judge report', () => {
       auditError: 'quota exhausted',
       auditExecutionMode: 'propose_only',
       auditPromptInjectionDetection: true,
+      incidentReadinessScore: 86,
+      incidentReadinessLabel: 'stabilized',
+      appliedCommandLabels: ['Reroute to Svalbard relay'],
     });
 
     expect(report).toContain('Scenario: Wildfire SAR Rapid Response');
     expect(report).toContain('Active policy: v1 thermal-aware candidate (promoted)');
+    expect(report).toContain('Incident readiness: 86% (stabilized)');
+    expect(report).toContain('Commands applied: Reroute to Svalbard relay');
     expect(report).toContain('Average sweep delta: +10');
     expect(report).toContain('Promotion gate: accepted');
     expect(report).toContain('Operator plan: fallback (You do not have enough quota to make this request.)');

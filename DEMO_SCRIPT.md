@@ -14,18 +14,19 @@ repeated simulated incidents.
 2. Point to the active seeded fleet, current policy version, and improvement
    proof.
 3. Trigger `Wildfire SAR Rapid Response`.
-4. Show Gemini's initial operational plan.
-5. Show the deterministic evaluator catching a weakness.
-6. Show the improvement pass.
-7. Show Gemini's critique and the app-generated policy mutation.
-8. Show A/B score improvement and policy diff.
-9. Show the learning-memory writeback from failure signature to candidate
+4. Apply the incident command deck and show seeded readiness improving.
+5. Show Gemini's initial operational plan.
+6. Show the deterministic evaluator catching a weakness.
+7. Show the improvement pass.
+8. Show Gemini's critique and the app-generated policy mutation.
+9. Show A/B score improvement and policy diff.
+10. Show the learning-memory writeback from failure signature to candidate
    patch.
-10. Click `Promote candidate` and show the active policy and operations log
+11. Click `Promote candidate` and show the active policy and operations log
     change.
-11. Show the incident work queue moving from open tasks toward readiness.
-12. Show the guardrail canary rejecting an unsafe overclaiming mutation.
-13. Show Gemini computer-use audit result, including propose-only mode and
+12. Show the incident work queue moving from open tasks toward readiness.
+13. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+14. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
 
 Closing line:
@@ -52,6 +53,14 @@ Trigger wildfire scenario:
 - optical weather outage at one ground station.
 
 Show Gemini operator plan.
+
+Apply incident commands:
+
+- reroute through Svalbard relay;
+- split hot preprocessing to Kepler-2;
+- attach confidence watermark.
+
+Show readiness rising and operations log entries for each command.
 
 ### 0:55 - 1:25: Evaluate
 
@@ -88,8 +97,9 @@ Click `Promote candidate`, then show the Console:
 - active policy changes to `v1 generated thermal-contact candidate`;
 - active score changes from `70` to `85`;
 - operations log records `Candidate promoted`.
-- incident work queue moves from `1/4` to `2/4`, then to `3/4` after report
-  export and `4/4` after audit result.
+- incident work queue moves from `1/5` to `2/5` after command stabilization,
+  then to `3/5` after promotion, `4/5` after audit result, and `5/5` after
+  report export.
 
 Show diff, score delta, and the fact that `Reset demo` restores the baseline.
 
@@ -136,17 +146,19 @@ Before handing the app to judges:
    `Baseline policy favors hot accelerator node and misses optical outage.`
 5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+15`,
    and `Average sweep +11`.
-6. Click `Promote candidate`, confirm Console shows active policy score `85`,
+6. Apply the three incident commands and confirm readiness reaches stabilized
+   state.
+7. Click `Promote candidate`, confirm Console shows active policy score `85`,
    and confirm operations log includes `Candidate promoted`.
-7. Confirm incident work queue reaches `4/4` after report export and audit
-   result.
-8. Click `Reset demo`, confirm active policy score returns to `70` and work
-   queue returns to `1/4`.
-9. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
+8. Confirm incident work queue reaches `5/5` after audit result and report
+   export.
+9. Click `Reset demo`, confirm active policy score returns to `70` and work
+   queue returns to `1/5`.
+10. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
-10. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+11. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
    live/fallback status for each Gemini surface.
-11. Confirm the audit surface or judge report shows `propose-only` mode and
+12. Confirm the audit surface or judge report shows `propose-only` mode and
    `Prompt-injection guard: enabled` after running audit.
 
 Latest rehearsal proof:
@@ -158,15 +170,21 @@ Latest rehearsal proof:
 - Policy Lab showed candidate patch, `+15`, and `Average sweep +11`.
 - Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
   `contact:27`, golden sweep `+11`, and guardrail canary hold.
+- Incident command deck applied `Reroute to Svalbard relay`,
+  `Split preprocessing to Kepler-2`, and `Attach confidence watermark`, raising
+  seeded readiness from `45%` active to `82%` stabilized and recording each
+  command in the operations log.
 - Policy Lab `Promote candidate` changed active policy to
   `v1 generated thermal-contact candidate`, updated active score from `70` to
   `85`, and wrote `Candidate promoted` to the operations log.
-- Incident work queue moved from `1/4` to `4/4` as promotion, report export,
-  and audit result completed; reset restored it to `1/4`.
+- Incident work queue moved from `1/5` to `5/5` as command stabilization,
+  promotion, audit result, and report export completed; reset restored it to
+  `1/5`.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only` and `Prompt guardenabled`.
 - Copy report included `Computer-use mode: propose-only`,
-  `Prompt-injection guard: enabled`, active policy state, and seeded telemetry
-  guardrail.
+  `Prompt-injection guard: enabled`, active policy state, incident readiness,
+  applied commands, and seeded telemetry guardrail.
 - Reset returned to Console with wildfire baseline.
-- Browser warnings/errors were empty.
+- Browser warnings/errors were empty in the fresh QA window, and mobile
+  `390x844` had no horizontal overflow.

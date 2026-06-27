@@ -20,6 +20,7 @@ Recommended first build:
 ```text
 Seeded scenario library
   -> scenario runner
+  -> incident command deck
   -> Gemini operator agent
   -> deterministic evaluator
   -> improvement engine
@@ -32,8 +33,8 @@ Seeded scenario library
 
 ## App Surfaces
 
-- **Console**: mission overview, live scenario, queue, alerts, agent version,
-  improvement score.
+- **Console**: mission overview, live scenario, scenario-aware command deck,
+  queue, alerts, agent version, improvement score.
 - **Scenario Lab**: seeded incidents, run history, scenario generator.
 - **Policy Lab**: current policy, candidate mutation, diff, promotion gate.
 - **Evaluation**: scorecards, trace replay, before/after comparison.
@@ -69,6 +70,8 @@ Core domain entities:
 - `AgentPolicy`
 - `AgentRun`
 - `EvaluationScore`
+- `IncidentCommand`
+- `IncidentReadiness`
 - `PolicyMutation`
 - `PromotionDecision`
 - `ComputerUseAudit`
