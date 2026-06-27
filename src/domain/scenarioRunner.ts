@@ -71,8 +71,9 @@ function chooseGroundStation(
   policy: PolicyVersion,
   stations: GroundStation[],
 ): GroundStation | null {
+  const contactAware = policy.weights.contact >= 1;
   const available = stations.filter((station) => !scenario.blockedGroundStationIds.includes(station.id));
-  const candidates = available.length > 0 ? available : stations;
+  const candidates = contactAware && available.length > 0 ? available : stations;
 
   return [...candidates].sort((a, b) => scoreStation(b, policy) - scoreStation(a, policy))[0] ?? null;
 }

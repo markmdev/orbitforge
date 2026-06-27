@@ -124,8 +124,8 @@ Before handing the app to judges:
 3. Confirm the active incident is `Wildfire SAR Rapid Response`.
 4. Confirm the baseline risk copy is visible:
    `Baseline policy favors hot accelerator node and misses optical outage.`
-5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+11`,
-   and `Average sweep +10`.
+5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+15`,
+   and `Average sweep +11`.
 6. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
 7. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
@@ -139,9 +139,9 @@ Latest rehearsal proof:
   status, and ground contact strip.
 - Evaluation showed `Guardrail canary held` and blocked the unsafe overclaiming
   canary at guardrail score 25.
-- Policy Lab showed candidate patch, `+11`, and `Average sweep +10`.
+- Policy Lab showed candidate patch, `+15`, and `Average sweep +11`.
 - Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
-  `contact:64`, golden sweep `+10`, and guardrail canary hold.
+  `contact:27`, golden sweep `+11`, and guardrail canary hold.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only` and `Prompt guardenabled`.
 - Copy report included `Computer-use mode: propose-only`,
