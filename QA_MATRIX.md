@@ -101,6 +101,8 @@ Known current blocker:
 - `npm run build`: TypeScript/Vite production build.
 - `npm run verify:runtime`: app shell plus Gemini configured-state health,
   without consuming a live model call.
+- `npm run verify:preview`: one-command production preview proof; builds,
+  starts preview, verifies app shell plus Gemini health, and stops preview.
 - `npm run verify:gemini`: intentional live Gemini proof when quota allows.
 - In-app browser: real click QA for Scenario Lab, Reset, Evaluation, Policy
   Lab, Gemini Trace, and Run audit.

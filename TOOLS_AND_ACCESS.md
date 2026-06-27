@@ -72,8 +72,10 @@ Useful commands:
 
 - `npm run dev -- --host 127.0.0.1` for local development with Gemini routes.
 - `npm run build` for production bundle verification.
-- `npm run preview -- --host 127.0.0.1 --port 4173` for built-app preview with
-  Gemini routes.
+- `npm run verify:preview` to build, start `vite preview`, verify the app shell
+  and Gemini health route, then stop preview.
+- `npm run preview -- --host 127.0.0.1 --port 4173` for manual built-app
+  preview with Gemini routes.
 - `ORBITFORGE_BASE_URL=http://127.0.0.1:4173 npm run verify:runtime` to verify
   a preview server instead of the dev server.
 

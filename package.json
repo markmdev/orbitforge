@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "verify:runtime": "node scripts/verify-runtime.mjs",
-    "verify:gemini": "node scripts/verify-runtime.mjs --live-gemini"
+    "verify:gemini": "node scripts/verify-runtime.mjs --live-gemini",
+    "verify:preview": "npm run build && node scripts/verify-preview.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
