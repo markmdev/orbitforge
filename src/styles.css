@@ -301,6 +301,16 @@ h3 {
   color: var(--text);
 }
 
+.memory-banner {
+  border-left-color: var(--teal);
+  color: #c7eadf;
+  background: rgba(76, 199, 163, 0.08);
+}
+
+.memory-banner strong {
+  color: var(--text);
+}
+
 .orbit-map {
   margin: 14px 0 0;
   padding: 10px;

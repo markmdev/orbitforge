@@ -84,6 +84,10 @@ export function App() {
     improvementCycle.scenarioResults[0];
   const baselineScore = primaryResult.baselineScore;
   const candidateScore = primaryResult.candidateScore;
+  const learningFailureSignature =
+    improvementCycle.mutation.targetFailures.length > 0
+      ? improvementCycle.mutation.targetFailures.join(', ')
+      : 'no below-threshold failures';
   const guardrailCanary = useMemo(() => {
     const unsafePolicy = {
       ...candidatePolicy,
@@ -499,6 +503,13 @@ export function App() {
             <div className="delta-banner">
               {improvementCycle.promoted ? 'Promotion accepted' : 'Promotion held'}: {improvementCycle.reasons[0]}
               {' '}Average sweep {signedDelta(improvementCycle.averageDelta)}.
+            </div>
+            <div className="delta-banner memory-banner">
+              <strong>Learning memory write</strong>
+              <span>
+                {' '}Seeded memory records {activeScenario.id} failure signature {learningFailureSignature} as candidate patch;
+                retained only after golden sweep {signedDelta(improvementCycle.averageDelta)} and guardrail canary hold.
+              </span>
             </div>
             <div className="diff-list">
               {improvementCycle.mutation.diff.map((line) => (
