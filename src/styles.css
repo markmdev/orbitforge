@@ -669,6 +669,8 @@ h3 {
   .audit-header,
   .node-row,
   .scenario-row,
+  .score-sweep-row,
+  .ground-strip article,
   .trace-card {
     align-items: stretch;
     flex-direction: column;
