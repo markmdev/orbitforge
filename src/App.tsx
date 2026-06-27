@@ -23,7 +23,8 @@ const statusCopy: Record<FleetStatus, string> = {
 
 export function App() {
   const [activeView, setActiveView] = useState<View>('console');
-  const activeScenario = scenarios[0];
+  const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
+  const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
   const candidatePolicy = policyVersions[1];
   const baselinePlan = runPolicyOnScenario(activeScenario, currentPolicy, orbitalNodes, groundStations);
@@ -32,6 +33,10 @@ export function App() {
   const candidateScore = evaluatePlan(activeScenario, candidatePolicy, candidatePlan, orbitalNodes, groundStations);
   const promotionDecision = decidePromotion(baselineScore, candidateScore);
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
+  const resetDemo = () => {
+    setActiveScenarioId(scenarios[0].id);
+    setActiveView('console');
+  };
 
   return (
     <main className="app-shell">
@@ -76,7 +81,7 @@ export function App() {
             <p className="eyebrow">Gemini self-improvement stack</p>
             <h2>{viewLabels.find((view) => view.id === activeView)?.label}</h2>
           </div>
-          <button className="reset-button" type="button">
+          <button className="reset-button" type="button" onClick={resetDemo}>
             <RotateCcw size={16} />
             Reset demo
           </button>
@@ -156,7 +161,15 @@ export function App() {
             </div>
             <div className="scenario-table">
               {scenarios.map((scenario) => (
-                <article className="scenario-row" key={scenario.id}>
+                <button
+                  className={scenario.id === activeScenario.id ? 'scenario-row active' : 'scenario-row'}
+                  key={scenario.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveScenarioId(scenario.id);
+                    setActiveView('console');
+                  }}
+                >
                   <div>
                     <strong>{scenario.name}</strong>
                     <span>{scenario.expectedBehavior}</span>
@@ -164,7 +177,7 @@ export function App() {
                   <Metric label="Raw" value={`${scenario.rawGb} GB`} />
                   <Metric label="Target" value={`${scenario.targetGb} GB`} />
                   <Metric label="Freshness" value={`${scenario.freshnessMinutes}m`} />
-                </article>
+                </button>
               ))}
             </div>
             <div className="data-banner">Seeded workload library: {scenarios.length} scenarios, {totalRawGb} GB raw orbital data, zero real satellite control.</div>

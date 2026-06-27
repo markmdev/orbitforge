@@ -278,6 +278,19 @@ h3 {
   background: rgba(29, 42, 38, 0.5);
 }
 
+.scenario-row {
+  width: 100%;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.scenario-row:hover,
+.scenario-row.active {
+  border-color: rgba(76, 199, 163, 0.42);
+  background: rgba(76, 199, 163, 0.1);
+}
+
 .node-row div,
 .scenario-row div,
 .trace-card div,
