@@ -48,7 +48,13 @@ type WorkQueueItem = {
   label: string;
   detail: string;
   complete: boolean;
+  action?: WorkQueueAction;
+  actionLabel?: string;
+  actionDisabled?: boolean;
+  gate?: string;
 };
+
+type WorkQueueAction = 'apply-next-command' | 'run-improvement' | 'promote-candidate' | 'run-mission' | 'run-audit' | 'export-report';
 
 const viewLabels: Array<{ id: View; label: string }> = [
   { id: 'console', label: 'Console' },
@@ -180,42 +186,66 @@ export function App() {
         label: 'Stabilize active incident',
         detail: 'Apply the scenario command deck until readiness reaches stabilized state.',
         complete: incidentCommandSummary.stabilized,
+        action: 'apply-next-command',
+        actionLabel: incidentCommandSummary.appliedCommands.length > 0 ? 'Apply next command' : 'Start stabilization',
       },
       {
         id: 'run-improvement',
         label: 'Run improvement pass',
         detail: 'Stage a scenario-scoped candidate from evaluator failures and Gemini critique.',
         complete: improvementStaged,
+        action: 'run-improvement',
+        actionLabel: geminiCritiqueTrace.status === 'loading' ? 'Running pass' : 'Run pass',
+        actionDisabled: geminiCritiqueTrace.status === 'loading',
       },
       {
         id: 'promote-candidate',
         label: 'Promote candidate policy',
         detail: 'Make the thermal-contact candidate the active operator policy.',
         complete: candidateAlreadyActive,
+        action: 'promote-candidate',
+        actionLabel: 'Promote',
+        actionDisabled: !canPromoteCandidate,
+        gate: improvementStaged ? 'Evaluator gate must accept the staged policy.' : 'Run improvement pass first.',
       },
       {
         id: 'run-mission',
         label: 'Run mission plan',
         detail: 'Execute the active policy into a seeded timeline and data-product handoff.',
-        complete: missionExecution !== null,
+        complete: candidateAlreadyActive && missionExecution !== null,
+        action: 'run-mission',
+        actionLabel: missionExecution ? 'Rerun mission' : 'Run mission',
+        actionDisabled: !candidateAlreadyActive,
+        gate: 'Promote the candidate policy first.',
       },
       {
         id: 'audit-ui',
         label: 'Run computer-use audit',
         detail: 'Generate audit frame and request Gemini proposed QA actions or exact blocker.',
         complete: computerAuditTrace.status !== 'idle' && computerAuditTrace.status !== 'loading',
+        action: 'run-audit',
+        actionLabel: computerAuditTrace.status === 'loading' ? 'Audit running' : 'Run audit',
+        actionDisabled: !missionExecution || computerAuditTrace.status === 'loading',
+        gate: 'Run mission plan first.',
       },
       {
         id: 'export-report',
         label: 'Export judge report',
         detail: 'Capture active policy, scores, Gemini state, and seeded-data guardrail.',
         complete: judgeReport.length > 0,
+        action: 'export-report',
+        actionLabel: 'Export report',
+        actionDisabled: computerAuditTrace.status === 'idle' || computerAuditTrace.status === 'loading',
+        gate: 'Run audit first.',
       },
     ],
     [
       candidateAlreadyActive,
+      canPromoteCandidate,
       computerAuditTrace.status,
+      geminiCritiqueTrace.status,
       guardrailCanary.decision.promoted,
+      incidentCommandSummary.appliedCommands.length,
       improvementStaged,
       incidentCommandSummary.stabilized,
       judgeReport.length,
@@ -521,6 +551,39 @@ export function App() {
     ]);
     setActiveView('console');
   };
+  const runWorkQueueAction = (action: WorkQueueAction) => {
+    if (action === 'apply-next-command') {
+      const nextCommand = incidentCommands.find((command) => !appliedCommandIds.includes(command.id));
+
+      if (nextCommand) {
+        applyCommandToIncident(nextCommand.id);
+      }
+
+      return;
+    }
+
+    if (action === 'run-improvement') {
+      runImprovementPass();
+      return;
+    }
+
+    if (action === 'promote-candidate') {
+      promoteCandidatePolicy();
+      return;
+    }
+
+    if (action === 'run-mission') {
+      runMissionPlan();
+      return;
+    }
+
+    if (action === 'run-audit') {
+      void runComputerAudit();
+      return;
+    }
+
+    void copyJudgeReport();
+  };
 
   useEffect(() => {
     let isCurrent = true;
@@ -789,14 +852,31 @@ export function App() {
               </div>
               <div className="work-queue-list">
                 {workQueue.map((item) => (
-                  <article className="work-item" key={item.id}>
+                  <article className="work-item" data-work-item={item.id} key={item.id}>
                     <div>
                       <strong>{item.label}</strong>
                       <span>{item.detail}</span>
+                      {!item.complete && item.gate && item.actionDisabled && <span className="work-item-gate">{item.gate}</span>}
                     </div>
-                    <strong className={item.complete ? 'event-status complete' : 'event-status ready'}>
-                      {item.complete ? 'done' : 'open'}
-                    </strong>
+                    <div className="work-item-controls">
+                      <strong className={item.complete ? 'event-status complete' : 'event-status ready'}>
+                        {item.complete ? 'done' : 'open'}
+                      </strong>
+                      {!item.complete && item.action && item.actionLabel && (
+                        <button
+                          className="queue-action"
+                          type="button"
+                          onClick={() => {
+                            if (item.action) {
+                              runWorkQueueAction(item.action);
+                            }
+                          }}
+                          disabled={item.actionDisabled}
+                        >
+                          {item.actionLabel}
+                        </button>
+                      )}
+                    </div>
                   </article>
                 ))}
               </div>

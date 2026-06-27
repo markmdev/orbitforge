@@ -26,8 +26,9 @@ repeated simulated incidents.
    patch.
 12. Click `Promote candidate` and show the active policy and operations log
     change.
-13. Click `Run mission plan` and show the timeline/data product handoff.
-14. Show the incident work queue moving from open tasks toward readiness.
+13. Use the incident work queue action rail to run the mission plan, audit, and
+    report export.
+14. Show the queue moving from open tasks toward readiness.
 15. Show the guardrail canary rejecting an unsafe overclaiming mutation.
 16. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
@@ -110,7 +111,7 @@ Click `Promote candidate`, then show the Console:
 - active policy changes to `v1 generated thermal-contact candidate`;
 - active score changes from `70` to `85`;
 - operations log records `Candidate promoted`.
-- click `Run mission plan`;
+- use the queue action rail to click `Run mission`;
 - timeline shows `Fireline SAR tiles`, `Kepler-2 -> New Mexico RF/Optical
   Hybrid`, and freshness `T+14m met`;
 - operations log records `Mission plan run`;
@@ -171,8 +172,8 @@ Before handing the app to judges:
    state.
 8. Click `Promote candidate`, confirm Console shows active policy score `85`,
    and confirm operations log includes `Candidate promoted`.
-9. Click `Run mission plan` and confirm `Fireline SAR tiles` is `met` at
-   `T+14m`.
+9. Use the queue action rail to run the mission plan and confirm `Fireline SAR
+   tiles` is `met` at `T+14m`.
 10. Confirm incident work queue reaches `7/7` after mission execution, audit
    result, and report export.
 11. Click `Reset demo`, confirm active policy score returns to `70` and work
@@ -214,7 +215,8 @@ Latest rehearsal proof:
   `Mission plan run` log entry.
 - Incident work queue moved from `1/7` to `7/7` as command stabilization,
   improvement pass, promotion, mission execution, audit result, and report
-  export completed; reset restored it to `1/7`.
+  export completed; unfinished rows exposed direct action buttons or short gate
+  reasons; reset restored it to `1/7`.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only`, `Prompt guardenabled`, audit-frame
   `Candidate score: 85`, and `Promotion gate: accepted`.

@@ -16,7 +16,7 @@ Last updated: 2026-06-27
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion without leaking across scenarios |
 | Mission execution | Run mission plan | Timeline steps, selected node/station, data product, freshness result, and operations log appear |
-| Work queue | Complete demo actions | Readiness moves from `1/7` to `7/7` as commands, improvement, promotion, mission execution, audit run, and report export complete |
+| Work queue | Complete demo actions | Readiness moves from `1/7` to `7/7`; unfinished rows expose contextual actions or clear gates |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Runtime health | Open Console | Gemini runtime health strip shows configured/blocked state from `/api/gemini/health` |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
@@ -72,7 +72,9 @@ Current browser proof surfaces:
 - Incident work queue: starts at `1/7`, moves to `2/7` after incident
   stabilization, `3/7` after improvement pass, `4/7` after promotion, `5/7`
   after mission execution, `6/7` after audit fallback/live result, `7/7` after
-  report export, and resets to `1/7`.
+  report export, and resets to `1/7`. Queue rows expose actions for the next
+  runnable step and gate mission/audit/report until their prerequisites are
+  complete.
 - Mobile command/queue proof: at `390x844`, command buttons and queue rows fit
   within `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Mobile runtime-health proof: at `390x844`, health strip fits within

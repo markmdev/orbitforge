@@ -481,6 +481,35 @@ h3 {
   min-width: 0;
 }
 
+.work-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.queue-action {
+  border: 1px solid rgba(76, 199, 163, 0.28);
+  background: rgba(76, 199, 163, 0.1);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  min-width: 108px;
+  padding: 8px 10px;
+}
+
+.queue-action:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.work-item-gate {
+  color: var(--amber);
+}
+
 .timeline-minute {
   min-width: 52px;
   color: var(--steel);
@@ -878,6 +907,11 @@ h3 {
   .trace-card {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .work-item-controls {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .nav-list {

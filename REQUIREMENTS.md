@@ -84,6 +84,8 @@ The system must show improvement over time:
 - let the operator promote the scenario-scoped candidate into active policy
   state;
 - record promotion/reset actions in an activity log;
+- expose contextual work-queue actions so the demo loop can be driven from the
+  operator console rather than passive status rows;
 - track incident readiness from real app actions such as command application,
   promotion, mission execution, audit result, and report export;
 - show before/after diff and score delta in the UI.
@@ -124,7 +126,8 @@ The demo must be immediately legible:
 - no landing page as the first screen;
 - first screen is the live console;
 - clear progress loop: scenario -> agent plan -> evaluation -> mutation ->
-  before/after improvement -> operator promotion -> mission execution;
+  before/after improvement -> operator promotion -> mission execution -> audit
+  -> judge report;
 - visually polished and technically dense;
 - seeded data labeled honestly.
 
