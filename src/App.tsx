@@ -412,6 +412,7 @@ export function App() {
             </div>
             <div className="delta-banner">
               {improvementCycle.promoted ? 'Promotion accepted' : 'Promotion held'}: {improvementCycle.reasons[0]}
+              {' '}Average sweep {signedDelta(improvementCycle.averageDelta)}.
             </div>
             <div className="diff-list">
               {improvementCycle.mutation.diff.map((line) => (

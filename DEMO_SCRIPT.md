@@ -102,3 +102,25 @@ If quota is the blocker, say:
 > output, model, status, and exact quota error, then falls back to deterministic
 > evaluation so the operator can keep working. We can rerun the same buttons
 > when quota clears.
+
+## Final Reset State
+
+Before handing the app to judges:
+
+1. Click `Reset demo`.
+2. Leave the app on `Console`.
+3. Confirm the active incident is `Wildfire SAR Rapid Response`.
+4. Confirm the baseline risk copy is visible:
+   `Baseline policy favors hot accelerator node and misses optical outage.`
+5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+11`,
+   and `Average sweep +10`.
+6. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+   live/fallback status for each Gemini surface.
+
+Latest rehearsal proof:
+
+- Policy Lab showed candidate patch, `+11`, and `Average sweep +10`.
+- Gemini Trace showed operator plan, improvement critique, computer-use audit,
+  and quota/fallback story.
+- Reset returned to Console with wildfire baseline.
+- Browser warnings/errors were empty.
