@@ -139,5 +139,7 @@ Known current blocker:
 - `npm run verify:preview`: one-command production preview proof; builds,
   starts preview, verifies app shell plus Gemini health, and stops preview.
 - `npm run verify:gemini`: intentional live Gemini proof when quota allows.
+- GitHub Actions `Demo verification`: runs `npm run verify:demo` with a
+  placeholder Gemini key and no live model call.
 - In-app browser: real click QA for Scenario Lab, Reset, Evaluation, Policy
   Lab, Gemini Trace, and Run audit.

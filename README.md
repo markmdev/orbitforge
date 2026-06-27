@@ -52,6 +52,10 @@ npm run verify:demo
 Use `npm run verify:gemini` only when a live Gemini quota check is worth
 spending a model call.
 
+GitHub Actions runs `npm run verify:demo` on push and PR with a placeholder
+`GEMINI_API_KEY`, proving configured-state middleware without making live
+Gemini calls.
+
 ## Project Map
 
 - `HACKATHON.md` for theme and prize strategy.

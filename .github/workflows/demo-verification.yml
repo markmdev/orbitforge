@@ -1,0 +1,28 @@
+name: Demo verification
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify-demo:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ci-placeholder-no-live-call
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify demo
+        run: npm run verify:demo
