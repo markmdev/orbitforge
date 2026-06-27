@@ -170,7 +170,7 @@ export const traceEvents: TraceEvent[] = [
     label: 'Gemini operator plan',
     source: 'gemini-fallback',
     status: 'ready',
-    detail: 'Live Gemini wiring will attach here; fallback trace is labeled until integration lands.',
+    detail: 'Runtime trace shows live Gemini output when available or a labeled fallback with the exact blocker.',
   },
   {
     id: 'trace-critique',
@@ -191,6 +191,6 @@ export const traceEvents: TraceEvent[] = [
     label: 'Computer-use audit',
     source: 'gemini-fallback',
     status: 'blocked',
-    detail: 'Awaiting Gemini computer-use API confirmation; UI will surface exact blocker.',
+    detail: 'Runtime audit shows Gemini computer-use actions when available or the exact API/quota blocker.',
   },
 ];
