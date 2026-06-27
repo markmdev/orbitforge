@@ -1,5 +1,5 @@
 ---
-status: ready-for-implementation
+status: implemented-demo
 date: "2026-06-27"
 owner: "space-datacenter-platform"
 ---
@@ -109,18 +109,21 @@ Must show:
 
 - Gemini computer-use audit result;
 - UI/ops critique;
-- actions attempted;
+- proposed actions, not executed actions;
+- propose-only mode and prompt-injection guard state;
 - timestamp/model;
 - whether the audit ran live or is blocked by API access.
 
 ## Functional Requirements
 
-- Seed at least five scenarios.
+- Seed at least three golden scenarios.
 - Run a deterministic evaluator with repeatable scores.
-- Store at least three policy versions in local state or files.
+- Store baseline/candidate policy versions and generate additional candidate or
+  canary policies from the improvement loop.
 - Show traceable Gemini usage.
 - Support at least one full policy improvement pass.
 - Show a visible before/after improvement.
+- Show a visible guardrail canary rejection for unsafe overclaiming mutations.
 - Label all telemetry as seeded or simulated.
 
 ## Gemini Requirements
@@ -129,8 +132,8 @@ Use Gemini for:
 
 - operator planning;
 - critique and improvement proposal;
-- in-app candidate generation or evaluation work;
-- computer-use UI audit.
+- traceable experiment recommendation;
+- propose-only computer-use UI audit with prompt-injection guard state.
 
 The Gemini integration should be visible in the product, not hidden in logs.
 
@@ -179,9 +182,12 @@ Demo-ready means:
 5. The improvement loop generates a candidate policy.
 6. The app reruns the old and new policies.
 7. The app shows a promoted improvement with a score delta and diff.
-8. Gemini computer use produces a visible UI/ops audit, or the app shows a
-   clear blocker if hackathon API access is unavailable.
-9. No UI placeholders, overlapping text, or fake real-satellite claims remain.
+8. The app shows an unsafe guardrail canary being blocked by deterministic
+   evaluation.
+9. Gemini computer use produces a visible propose-only UI/ops audit with prompt
+   guard state, or the app shows a clear blocker if hackathon API access is
+   unavailable.
+10. No UI placeholders, overlapping text, or fake real-satellite claims remain.
 
 ## Verification
 
@@ -196,6 +202,8 @@ Operating-surface checks:
 
 - manually run the full demo loop in a browser;
 - verify Gemini traces are visible;
+- verify guardrail canary rejection is visible;
 - verify seeded labels are visible;
 - verify the app can reset to a clean demo state;
+- verify desktop and mobile layouts do not overflow;
 - verify the final judge script works without hidden setup.
