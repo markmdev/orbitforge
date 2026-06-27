@@ -36,9 +36,8 @@ Last updated: 2026-06-27
 
 - Implement `src/ai/` modules for Gemini planning, critique, scenario
   generation, policy mutation, computer-use audit, and trace capture.
-- Use Gemini managed-agent or Interactions API surfaces only if available and
-  only through those app modules.
-- Persist session/environment ids in app state when the API returns them.
+- Use Gemini runtime API surfaces only through those app modules.
+- Persist API trace ids in app state when the API returns them.
 - Make Gemini-generated artifacts visible in the UI.
 
 ## Phase 6 - Gemini Computer Use Audit
@@ -58,5 +57,5 @@ Last updated: 2026-06-27
 ## Stop Points
 
 Return to Mark before changing the core product direction, dropping Gemini
-managed agents, dropping computer use, or replacing the self-improvement loop
-with a static demo.
+computer use, adding a managed-agent dependency, or replacing the
+self-improvement loop with a static demo.

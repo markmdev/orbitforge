@@ -52,9 +52,9 @@ When source exists, keep Gemini behavior in normal app modules:
 - `src/components/` for UI surfaces that display plans, evaluations, diffs,
   traces, and audit results.
 
-Do not create separate AGENTS/SKILL files for app runtime behavior. If Gemini
-supports managed-agent or interaction APIs, wrap them as app services under
-`src/ai/` like any other product module.
+Do not create separate AGENTS/SKILL files for app runtime behavior. Gemini API
+surfaces belong behind app-owned service modules under `src/ai/` like any other
+product dependency.
 
 ## Data Model
 
@@ -72,7 +72,7 @@ Core domain entities:
 - `PolicyMutation`
 - `PromotionDecision`
 - `ComputerUseAudit`
-- `ManagedAgentSession`
+- `GeminiTrace`
 
 ## Gemini Integration Boundaries
 
@@ -96,9 +96,8 @@ scores so the demo has a crisp before/after proof.
 1. Run current policy against scenario set.
 2. Evaluate with deterministic scorecard.
 3. Ask Gemini to analyze the failures.
-4. Ask the in-app Gemini improvement service to generate a candidate policy or
-   scenario variant. If Gemini managed-agent or interaction APIs are available,
-   this service may call them behind the same product interface.
+4. Ask the in-app Gemini improvement service to critique failures and recommend
+   the next experiment through the same runtime service interface.
 5. Run candidate policy against baseline and new scenarios.
 6. Promote only if score improves and guardrails pass.
 7. Record the diff and make it visible in the dashboard.

@@ -135,9 +135,9 @@ Exit criteria:
 
 Goals:
 
-- connect Gemini managed-agent or Interactions API surface if available through
-  the in-app `src/ai/` service layer;
-- persist environment/session id when available;
+- connect Gemini runtime API surfaces through the in-app `src/ai/` service
+  layer;
+- persist API trace ids when available;
 - integrate Gemini 3.5 Flash computer-use audit or the closest live supported
   API path;
 - add visible Gemini audit and improvement trace panels.

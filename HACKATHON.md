@@ -70,11 +70,12 @@ Use Gemini inside the app as a first-class product capability:
   experiments, and produce inspectable traces. The deterministic evaluator owns
   policy promotion.
 
-Optional API surface:
+Implemented API surface:
 
-- **Gemini managed agents / Interactions API if available**: only use this as an
-  in-app service wrapper if the account exposes it and it strengthens the demo.
-  Do not make the Gemini Antigravity IDE or development-time skills a dependency.
+- **Gemini Interactions API through app routes**: plan, critique, and
+  computer-use audit calls are product runtime capabilities behind Vite API
+  routes. Do not make the Gemini Antigravity IDE, managed development
+  environments, or development-time skills a dependency.
 
 Optional stretch:
 

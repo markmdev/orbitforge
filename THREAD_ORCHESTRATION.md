@@ -85,7 +85,7 @@ Owns:
 - operator planning prompts;
 - critique prompts;
 - Gemini product-module integration;
-- managed-agent/Interactions spike only if available as an app runtime API;
+- Interactions/runtime API verification through app modules;
 - computer-use spike;
 - trace capture.
 

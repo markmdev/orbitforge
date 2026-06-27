@@ -16,9 +16,8 @@ compute operations platform. That alone would be a polished space datacenter
 dashboard, but it would not be enough for the hackathon themes or Gemini prize.
 
 The Gemini 3.5 prize specifically rewards new Gemini ecosystem surfaces such as
-managed-agent or interaction-style API capabilities, Gemini 3.5 Flash computer
-use, Live Translate, and GenMedia. A static dashboard or wrapper chatbot would
-be weak.
+interaction-style API capabilities, Gemini 3.5 Flash computer use, Live
+Translate, and GenMedia. A static dashboard or wrapper chatbot would be weak.
 
 ## Decision
 
@@ -61,9 +60,8 @@ than only hear about it.
 
 MVP should include:
 
-- Gemini API surfaces, including managed-agent or interaction-style APIs if
-  available, for in-app scenario generation, policy mutation, or
-  evaluation-harness work.
+- Gemini API surfaces through normal app runtime modules for in-app scenario
+  reasoning, policy critique, and evaluation-harness work.
 - Gemini 3.5 Flash computer use for visible UI/ops audit.
 
 Stretch:

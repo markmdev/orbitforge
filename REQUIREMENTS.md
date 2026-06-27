@@ -81,9 +81,8 @@ visible self-improvement function:
 - producing a traceable improvement report.
 
 All prompts, schemas, traces, and eval results should live in app-owned source
-and data paths. If managed-agent or Interactions API surfaces are available,
-they may be wrapped under the app's AI service layer, but they are not the
-default architecture. Gemini Antigravity is an IDE and is not required.
+and data paths. Gemini API calls should be wrapped under the app's AI service
+layer; Gemini Antigravity is an IDE and is not required.
 
 ### R7 - Gemini Computer Use Integration
 

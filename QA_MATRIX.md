@@ -53,7 +53,7 @@ Current browser proof surfaces:
 |---|---|
 | No Gemini API key | App explains missing key and keeps deterministic demo usable |
 | Gemini plan call fails | Error is visible; fallback trace is labeled fallback |
-| Managed agent unavailable | Improvement lab shows blocker and local mutation fallback |
+| Gemini runtime route unavailable | Plan, critique, or audit panel shows exact blocker and deterministic loop stays usable |
 | Computer use unavailable | Audit panel shows exact blocker and manual QA fallback |
 | Rate limit | App preserves state and lets user retry |
 

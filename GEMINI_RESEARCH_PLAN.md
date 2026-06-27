@@ -12,8 +12,8 @@ capability, not a wrapper.
 1. Which Gemini API surfaces are actually available for in-app agentic product
    behavior, including interaction-style work, stateful sessions, structured
    outputs, tool/computer use, and follow-up calls?
-2. How do we preserve or display environment/session id for a stateful
-   improvement lab?
+2. How do we preserve or display API trace/session ids when Gemini returns
+   them, while keeping app state as the source of truth?
 3. What is the exact Gemini 3.5 Flash computer-use API shape for screenshot
    input and UI actions?
 4. What model names and preview flags are required at hackathon time?
@@ -79,8 +79,8 @@ candidate policy and promotion gate.
 ### Spike C - In-App Improvement Lab
 
 Run candidate generation or scenario-variant generation through the app's
-Gemini service layer. If a managed/session API is available, preserve its id and
-show artifacts in the app.
+Gemini service layer. Current demo state stays app-owned; future stateful
+session APIs can be wrapped later only if they strengthen the product surface.
 
 ### Spike D - Computer Use Audit
 

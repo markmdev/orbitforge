@@ -191,6 +191,6 @@ export const traceEvents: TraceEvent[] = [
     label: 'Computer-use audit',
     source: 'gemini-fallback',
     status: 'blocked',
-    detail: 'Runtime audit shows Gemini computer-use actions when available or the exact API/quota blocker.',
+    detail: 'Runtime audit shows live Gemini computer-use proposed actions or the exact API/quota blocker.',
   },
 ];
