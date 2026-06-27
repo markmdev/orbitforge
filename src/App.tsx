@@ -16,6 +16,7 @@ import type { GeminiComputerAuditTrace } from './ai/geminiComputerAudit';
 import { requestGeminiComputerAudit } from './ai/geminiComputerAudit';
 import type { GeminiCritiqueTrace, GeminiPlanTrace } from './ai/geminiPlan';
 import { requestGeminiCritique, requestGeminiPlan } from './ai/geminiPlan';
+import { OrbitMap } from './components/OrbitMap';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
 import { runImprovementCycle } from './domain/improvement';
 import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
@@ -255,6 +256,11 @@ export function App() {
                 <Metric label="Freshness" value={`${activeScenario.freshnessMinutes} min`} />
               </div>
               <p className="risk-note">{activeScenario.primaryRisk}</p>
+              <OrbitMap
+                blockedStationIds={activeScenario.blockedGroundStationIds}
+                nodes={orbitalNodes}
+                stations={groundStations}
+              />
             </section>
 
             <section className="panel">
