@@ -47,12 +47,12 @@ Tagline:
    thermal throttle, radiation spike, or missed contact window.
 3. A Gemini-powered operator agent proposes a plan.
 4. The system evaluates that plan against seeded telemetry, SLAs, and risk.
-5. Gemini 3.5 runs a self-improvement pass: critique, generate scenario
-   variants, mutate policy or prompt text, and run an A/B evaluation.
+5. Gemini 3.5 runs a self-improvement pass: critique the deterministic
+   failures, recommend the next experiment, and produce an inspectable trace.
 6. The dashboard shows before/after scores, trace diffs, policy changes, and
-   why the new version is better.
-7. A Gemini computer-use auditor interacts with the UI and produces a visible
-   QA/critique trace.
+   why the app-owned candidate is better.
+7. A Gemini computer-use auditor inspects the generated UI audit frame and
+   returns proposed QA actions or the exact quota/API blocker.
 
 The demo should feel like the agent is not just using Gemini. It is using
 Gemini to improve the system that uses Gemini.
@@ -62,11 +62,13 @@ Gemini to improve the system that uses Gemini.
 Use Gemini inside the app as a first-class product capability:
 
 - **Gemini 3.5 Flash Computer Use**: primary prize feature. Use screenshots/UI
-  actions to let Gemini inspect or operate the demo console and produce a
-  visible UX/ops-readiness critique.
+  audit frames to let Gemini inspect the demo console and propose
+  UX/ops-readiness actions. Keep actions propose-only, enable prompt-injection
+  detection, and never claim real UI execution when quota/API access is blocked.
 - **Gemini runtime self-improvement service**: use Gemini from normal app
-  modules to generate scenario variants, mutate policy text, explain failures,
-  and write versioned improvement reports.
+  modules to propose operator plans, critique deterministic failures, recommend
+  experiments, and produce inspectable traces. The deterministic evaluator owns
+  policy promotion.
 
 Optional API surface:
 
@@ -88,9 +90,9 @@ The winning story:
 
 > Space datacenters are too dynamic for static runbooks. OrbitForge gives the
 > orbital compute operator an AI agent that learns from every simulated
-> incident. Gemini 3.5 runs the agent, audits the UI, creates harder scenarios,
-> mutates operating policies, and proves improvement with side-by-side
-> evaluation.
+> incident. Gemini 3.5 proposes plans, critiques failures, and audits the UI;
+> OrbitForge mutates and promotes policies only when deterministic evaluation
+> and guardrail canaries agree.
 
 ## Non-Goals
 
