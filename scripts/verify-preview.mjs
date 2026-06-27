@@ -4,11 +4,12 @@ const host = process.env.ORBITFORGE_PREVIEW_HOST ?? '127.0.0.1';
 const port = process.env.ORBITFORGE_PREVIEW_PORT ?? '4173';
 const baseUrl = process.env.ORBITFORGE_PREVIEW_BASE_URL ?? `http://${host}:${port}`;
 const startupTimeoutMs = Number(process.env.ORBITFORGE_PREVIEW_TIMEOUT_MS ?? 15_000);
+const viteBin = process.platform === 'win32' ? 'node_modules/.bin/vite.cmd' : 'node_modules/.bin/vite';
 
 let previewExited = false;
 let previewExitDetail = 'preview process has not exited';
 
-const preview = spawn('npm', ['run', 'preview', '--', '--host', host, '--port', port], {
+const preview = spawn(viteBin, ['preview', '--host', host, '--port', port], {
   cwd: process.cwd(),
   env: process.env,
   stdio: ['ignore', 'pipe', 'pipe'],

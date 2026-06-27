@@ -9,6 +9,7 @@ on:
 jobs:
   verify-demo:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     env:
       GEMINI_API_KEY: ci-placeholder-no-live-call
     steps:
