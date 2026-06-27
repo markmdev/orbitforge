@@ -8,6 +8,16 @@ One Controller thread owns the project. Specialist threads execute bounded work
 and report back. No specialist decides product direction, closes scope, or
 declares the demo complete.
 
+Specialist threads are not one-off outsourcing. The Controller must stay deep in
+the project, understand the workstream before assigning it, review returned
+diffs, inspect supporting sources, question weak assumptions, run or request
+proof, and integrate only the parts that improve the product.
+
+The thread plan is a tool, not a commitment. The Controller may merge, kill,
+replace, or redefine specialist scopes whenever the current shape stops helping
+the demo. Record the current truth here or in `THREADS.md`; do not preserve
+stale role boundaries for politeness.
+
 Use model `gpt-5.5` with `xhigh` reasoning for specialist threads unless Mark
 asks otherwise.
 
@@ -22,7 +32,8 @@ Owns:
 - product decisions;
 - integration;
 - final QA verdict;
-- Mark reporting.
+- Mark reporting;
+- reviewing and accepting or rejecting every specialist output.
 
 ### Implementation Thread
 
@@ -177,8 +188,13 @@ Reports:
 1. Controller creates or spawns thread with bounded scope.
 2. Controller records active thread in `THREADS.md`.
 3. Thread reports back with files changed, proof, blockers, and next action.
-4. Controller integrates or rejects the work.
-5. Controller removes inactive row from `THREADS.md`.
+4. Controller reads the returned work, verifies claims, asks follow-up questions
+   when needed, and runs or assigns additional proof.
+5. Controller integrates, revises, or rejects the work.
+6. Controller removes inactive row from `THREADS.md`.
+
+If the lifecycle itself creates drag, the Controller changes it and updates this
+file or the active run note.
 
 ## Handoff Prompt Template
 
@@ -195,4 +211,7 @@ Your scope:
 You are not alone in the codebase. Do not revert unrelated changes. Do not
 decide product direction. Report changed files, checks run, proof, blockers,
 and remaining risks back to the Controller.
+
+Your report is input, not completion. The Controller will review, test, and
+integrate or reject the work.
 ```

@@ -27,3 +27,12 @@ surfaces instead.
 Update: Gemini should be used inside the app as a runtime product capability,
 not as development scaffolding. Remove `.agents/skills`-style prebuilt skill
 templates and implement AI behavior as normal app modules.
+
+Update: specialist Codex threads are helper roles, not fire-and-forget task
+outsourcing. The Controller must stay deep in the product, review returned
+work, question assumptions, verify claims, and integrate only accepted output.
+
+Update: Mark gave the Controller full project-manager ownership over the
+execution system. If the thread model, Linear structure, phase order, QA loop,
+or research split is not working, change it and record the new project truth
+instead of asking Mark to manage the process.

@@ -9,7 +9,7 @@ hackathon demo:
 
 > A Gemini 3.5 self-improving mission-ops stack where an orbital-compute agent
 > handles seeded incidents, gets evaluated, mutates its own operating policy,
-> proves improvement, and exposes Gemini managed-agent plus computer-use traces.
+> proves improvement, and exposes Gemini runtime plus computer-use traces.
 
 The run is not done early. If the core demo works before the timer ends, keep
 improving polish, robustness, evals, traces, judge narrative, deployment,
@@ -37,6 +37,22 @@ One Controller thread owns:
 
 Specialist Codex threads own bounded workstreams and report back to the
 Controller. They do not decide product direction or mark work done.
+
+Specialist threads are never fire-and-forget. Before accepting their output,
+the Controller must understand the relevant domain context, inspect the changed
+files or research sources, talk through gaps with the specialist when needed,
+run or delegate the right proof, and decide whether the work is integrated,
+revised, or rejected.
+
+The Controller keeps enough direct context to explain every major product,
+architecture, Gemini, eval, QA, and demo decision without pointing at a
+specialist as the source of truth.
+
+The Controller owns the operating system for the 24-hour run. If a phase plan,
+thread split, Linear issue shape, QA loop, or research strategy is not helping,
+change it. Do not wait for Mark to approve internal process repairs unless the
+change would alter product scope, external authority, account/payment/security,
+or the public demo claim.
 
 Linear tracks active work, blockers, proof gates, and follow-ups. Project files
 own architecture and product truth. The app owns runtime proof once it exists.
@@ -198,6 +214,22 @@ If a phase finishes early, rotate through this queue:
 9. create a better final report/export;
 10. remove anything that feels fake or wrapper-like.
 
+## Continuous Loop When the System Is Not Working
+
+If progress slows, quality drops, or coordination starts producing noise:
+
+1. collapse or merge specialist scopes;
+2. replace a weak thread with direct Controller work;
+3. rewrite Linear issues around proof gates instead of tasks;
+4. reorder phases around the current biggest demo risk;
+5. narrow a feature until it is provable;
+6. add a review or QA pass where defects are slipping through;
+7. update the owner doc that future work will read;
+8. continue building.
+
+The only bad move is to keep following an operating model that is no longer
+serving the demo.
+
 ## Stop Rules During the 24-Hour Goal
 
 Do not stop because the app is "done." Stop only when:
@@ -214,6 +246,12 @@ Do not stop because the app is "done." Stop only when:
 - Keep one active Controller thread.
 - Update Linear whenever work starts, blocks, verifies, or closes.
 - Update `THREADS.md` when specialist threads are active.
+- Review specialist outputs before integration: read their diffs or research,
+  verify their claims against source/runtime evidence, and record any accepted
+  decision in the project owner file.
+- Change the execution system when evidence says it is not working, then record
+  the replacement rule in `RUNBOOK_24H.md`, `THREAD_ORCHESTRATION.md`,
+  `LINEAR_PLAN.md`, or the relevant note.
 - Give Mark concise status only when useful or at major phase boundaries.
 - Keep private coordination out of public/demo artifacts.
 

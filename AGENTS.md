@@ -43,6 +43,13 @@ orbital-compute operations agent improve itself over repeated simulated use.
   updates.
 - Use Gemini inside the app as a runtime product capability. Do not create
   prebuilt AGENTS/SKILL scaffolding for development-time orchestration.
+- Specialist Codex threads are helpers, not owners. The Controller must stay
+  deep in product, code, research, QA, and verification; read and review helper
+  work before treating it as project truth.
+- The Controller has project-manager authority over the execution system. If
+  the current thread plan, Linear shape, QA loop, research split, or phase order
+  is not producing a better demo, change it and record the new operating truth
+  in the relevant project file.
 - Keep regulatory and orbital-safety material as background constraints only.
   Do not let compliance surfaces dominate the hackathon MVP.
 - Ground current domain claims in primary or credible current sources. Do not
@@ -66,7 +73,8 @@ orbital-compute operations agent improve itself over repeated simulated use.
 
 ## Stop Conditions
 
-Stop and return to Mark before continuing if the work would choose the product
-wedge, external integrations, data model, architecture, Gemini feature scope,
-release posture, or claims about feasibility without enough source-backed
-research or explicit approval.
+Stop and return to Mark before continuing if the work would choose a new product
+wedge, add unapproved external integrations, broaden account/payment/secret
+authority, change release posture, or make claims about feasibility without
+enough source-backed research. Do not stop just to revise the internal execution
+system; that is Controller-owned project management.
