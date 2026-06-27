@@ -27,9 +27,6 @@ orbital-compute operations agent improve itself over repeated simulated use.
 - `ADRs/` owns durable architecture, product-model, or data-model decisions.
 - `notes/` owns reusable work memory, blockers, and follow-ups that should not
   live only in chat.
-- `.agents/` owns local Gemini agent instruction and skill templates for
-  managed-agent or Interactions API experiments when those API surfaces are
-  available. These are not global Codex skills.
 - Future app source should live in this project root after the PRD or Mark's
   explicit build request defines the surface.
 
@@ -44,6 +41,8 @@ orbital-compute operations agent improve itself over repeated simulated use.
 - Do not build a generic chatbot or static dashboard. The demo must show an AI
   operations loop improving from scenario runs, feedback, evaluation, and policy
   updates.
+- Use Gemini inside the app as a runtime product capability. Do not create
+  prebuilt AGENTS/SKILL scaffolding for development-time orchestration.
 - Keep regulatory and orbital-safety material as background constraints only.
   Do not let compliance surfaces dominate the hackathon MVP.
 - Ground current domain claims in primary or credible current sources. Do not

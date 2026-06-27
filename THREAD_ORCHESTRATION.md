@@ -73,14 +73,15 @@ Owns:
 - Gemini API wrapper;
 - operator planning prompts;
 - critique prompts;
-- managed-agent/Interactions spike;
+- Gemini product-module integration;
+- managed-agent/Interactions spike only if available as an app runtime API;
 - computer-use spike;
 - trace capture.
 
 Writes:
 
 - server/API integration files;
-- Gemini prompt assets;
+- Gemini prompt/schema/eval assets inside app modules;
 - trace adapters.
 
 Reports:
@@ -195,4 +196,3 @@ You are not alone in the codebase. Do not revert unrelated changes. Do not
 decide product direction. Report changed files, checks run, proof, blockers,
 and remaining risks back to the Controller.
 ```
-

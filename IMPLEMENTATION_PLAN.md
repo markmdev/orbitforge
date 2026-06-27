@@ -32,13 +32,14 @@ Last updated: 2026-06-27
 - Promote better policy only if guardrails pass.
 - Show diff and score delta.
 
-## Phase 5 - Gemini Managed-Agent or Interactions
+## Phase 5 - In-App Gemini Improvement Service
 
-- Mount `.agents/AGENTS.md` and `.agents/skills/` instructions where supported.
-- Use Gemini managed-agent or Interactions API surfaces, if available, for
-  scenario generation, policy mutation, or evaluation work.
-- Persist environment id in app state when supported.
-- Make managed-agent artifacts visible in the UI.
+- Implement `src/ai/` modules for Gemini planning, critique, scenario
+  generation, policy mutation, computer-use audit, and trace capture.
+- Use Gemini managed-agent or Interactions API surfaces only if available and
+  only through those app modules.
+- Persist session/environment ids in app state when the API returns them.
+- Make Gemini-generated artifacts visible in the UI.
 
 ## Phase 6 - Gemini Computer Use Audit
 

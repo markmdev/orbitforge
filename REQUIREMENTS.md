@@ -70,20 +70,20 @@ The system must show improvement over time:
   guardrails;
 - show before/after diff and score delta in the UI.
 
-### R6 - Gemini Managed-Agent or Interactions Integration
+### R6 - Gemini In-App Runtime Integration
 
-The implementation should use Gemini managed-agent or Interactions API surfaces,
-if available to the hackathon account, for at least one visible
-self-improvement function:
+The implementation should use Gemini through normal app modules for at least one
+visible self-improvement function:
 
 - generating new scenario variants;
 - writing or mutating policy text;
-- running an evaluation script in a hosted environment;
+- explaining evaluation failures and possible fixes;
 - producing a versioned improvement report.
 
-Any environment, session, or interaction id should be preserved when possible so
-the demo can show a stateful hosted improvement lab. Gemini Antigravity is an
-IDE and is not required.
+All prompts, schemas, traces, and eval results should live in app-owned source
+and data paths. If managed-agent or Interactions API surfaces are available,
+they may be wrapped under the app's AI service layer, but they are not the
+default architecture. Gemini Antigravity is an IDE and is not required.
 
 ### R7 - Gemini Computer Use Integration
 

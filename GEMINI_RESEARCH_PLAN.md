@@ -9,9 +9,9 @@ capability, not a wrapper.
 
 ## Primary Research Questions
 
-1. Which Gemini API surfaces are actually available for managed-agent or
-   interaction-style work, and how do they accept files, instructions, skills,
-   and follow-up calls?
+1. Which Gemini API surfaces are actually available for in-app agentic product
+   behavior, including interaction-style work, stateful sessions, structured
+   outputs, tool/computer use, and follow-up calls?
 2. How do we preserve or display environment/session id for a stateful
    improvement lab?
 3. What is the exact Gemini 3.5 Flash computer-use API shape for screenshot
@@ -47,10 +47,11 @@ Call Gemini with one scenario and current policy. Return structured JSON:
 Call Gemini with scorecard and failure trace. Return candidate policy mutation
 in a structured format.
 
-### Spike C - Managed Agent Lab
+### Spike C - In-App Improvement Lab
 
-Run candidate generation or scenario-variant generation in managed hosted
-environment. Preserve environment id and show artifacts in the app.
+Run candidate generation or scenario-variant generation through the app's
+Gemini service layer. If a managed/session API is available, preserve its id and
+show artifacts in the app.
 
 ### Spike D - Computer Use Audit
 
@@ -66,3 +67,17 @@ the prize target. If a Gemini surface is blocked, the app must show:
 - why it is blocked;
 - what fallback is running;
 - what would be live with access.
+
+## AI Product Research
+
+During kickoff, research current best practices for production AI product
+quality:
+
+- structured outputs and schema validation;
+- deterministic evals around model outputs;
+- trace capture and replay;
+- prompt/version management;
+- human-visible confidence and fallback states;
+- latency/rate-limit handling;
+- guardrails that are evaluated outside the model;
+- UX patterns for making AI work inspectable instead of magical.

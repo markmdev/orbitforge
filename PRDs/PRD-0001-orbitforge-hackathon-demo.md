@@ -41,9 +41,10 @@ A wildfire detection workload arrives from an orbital SAR data source:
 - one ground station has an optical-weather outage.
 
 The current agent policy makes an imperfect placement or weak risk explanation.
-OrbitForge evaluates the result, uses Gemini to critique the failure, uses a
-managed agent session to generate a candidate policy update, reruns the scenario
-set, and promotes the improved policy only if it performs better.
+OrbitForge evaluates the result, uses Gemini inside the app to critique the
+failure, generates a candidate policy update through the app's improvement
+service, reruns the scenario set, and promotes the improved policy only if it
+performs better.
 
 ## MVP Screens
 
@@ -99,8 +100,7 @@ Must show:
 - current policy/prompt;
 - candidate mutation;
 - diff;
-- source of mutation: Gemini managed-agent, interaction, or local Gemini
-  improvement path;
+- source of mutation: in-app Gemini improvement service;
 - promotion gate.
 
 ### Gemini Audit
@@ -129,7 +129,7 @@ Use Gemini for:
 
 - operator planning;
 - critique and improvement proposal;
-- managed-agent candidate generation or evaluation work;
+- in-app candidate generation or evaluation work;
 - computer-use UI audit.
 
 The Gemini integration should be visible in the product, not hidden in logs.

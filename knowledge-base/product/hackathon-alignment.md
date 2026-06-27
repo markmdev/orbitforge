@@ -33,7 +33,7 @@ OrbitForge becomes more useful over repeated use:
 
 - stores failures;
 - generates harder scenarios;
-- learns policy changes;
+- learns policy and evaluation changes;
 - preserves useful evaluations;
 - tracks improvement across versions.
 
@@ -48,8 +48,8 @@ labeled as dataset generation rather than weight updates.
 
 Required prize surfaces to target:
 
-- Gemini managed agents / Interactions API surfaces, if available, for stateful
-  hosted improvement work;
+- Gemini API surfaces inside the app for planning, critique, mutation, and
+  traceable improvement work;
 - Gemini 3.5 Flash computer use for UI and workflow audit.
 
 Optional:

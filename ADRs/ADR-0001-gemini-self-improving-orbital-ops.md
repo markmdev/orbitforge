@@ -28,7 +28,7 @@ compute infrastructure.
 OrbitForge will use the orbital datacenter domain as the environment where an
 AI operations agent repeatedly faces incidents, proposes actions, receives
 deterministic evaluation, and improves its own policy, prompt, scenario set, or
-skills over time.
+evaluation behavior over time.
 
 The primary hackathon theme is **The Self-Improvement Stack**. The secondary
 theme is **Continual Learning**.
@@ -37,8 +37,8 @@ Gemini 3.5 is not an add-on. It is the center of the demo:
 
 - Gemini proposes operational plans.
 - Gemini critiques failures and suggests improvements.
-- Gemini managed agents generate or test candidate improvements in hosted
-  environments.
+- Gemini runs inside the app to generate or test candidate improvements through
+  normal product modules.
 - Gemini 3.5 Flash computer use audits the running UI or operator workflow.
 
 ## Consequences
@@ -61,8 +61,9 @@ than only hear about it.
 
 MVP should include:
 
-- Gemini managed-agent or Interactions API surfaces, if available, for scenario
-  generation, policy mutation, or evaluation-harness work.
+- Gemini API surfaces, including managed-agent or interaction-style APIs if
+  available, for in-app scenario generation, policy mutation, or
+  evaluation-harness work.
 - Gemini 3.5 Flash computer use for visible UI/ops audit.
 
 Stretch:
@@ -89,8 +90,8 @@ beautiful, impressive demo and not a regulatory project.
 
 ### Recursive Intelligence Claim
 
-Deferred. The current concept improves policies, prompts, skills, scenarios,
-and evaluation loops. It does not directly improve raw model weights. Calling it
+Deferred. The current concept improves policies, prompts, scenarios, and
+evaluation loops. It does not directly improve raw model weights. Calling it
 Recursive Intelligence would overclaim unless later implementation adds genuine
 training-data, hyperparameter, architecture, or model-improvement work.
 

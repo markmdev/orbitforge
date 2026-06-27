@@ -23,3 +23,7 @@ Update: Mark created the Linear project at
 Use that project and do not create a duplicate. Mark also clarified that Gemini
 Antigravity is an IDE and is not required for this project; target Gemini API
 surfaces instead.
+
+Update: Gemini should be used inside the app as a runtime product capability,
+not as development scaffolding. Remove `.agents/skills`-style prebuilt skill
+templates and implement AI behavior as normal app modules.

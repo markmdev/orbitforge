@@ -11,10 +11,10 @@ Decision captured in `ADRs/ADR-0001-gemini-self-improving-orbital-ops.md`:
 - primary theme: Self-Improvement Stack;
 - secondary theme: Continual Learning;
 - domain: seeded orbital compute operations;
-- prize strategy: Gemini managed agents plus Gemini 3.5 Flash computer use;
+- prize strategy: Gemini inside the app for planning, critique, mutation,
+  traceable improvement, and Gemini 3.5 Flash computer use;
 - DigitalOcean optional, LiveKit not a target.
 
 The next implementation pass should start from
 `PRDs/PRD-0001-orbitforge-hackathon-demo.md`, `REQUIREMENTS.md`, and
 `ARCHITECTURE.md`.
-

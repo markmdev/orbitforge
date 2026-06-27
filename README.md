@@ -26,4 +26,4 @@ Start here:
 - `notes/` for durable work memory and follow-ups.
 
 Current status: hackathon strategy, ADR, PRD, requirements, architecture, and
-Gemini managed-agent instruction templates are ready for implementation.
+24-hour operating plan are ready for implementation.

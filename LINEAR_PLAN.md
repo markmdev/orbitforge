@@ -66,13 +66,13 @@ Proof gate:
 - scenario -> plan -> score -> critique -> mutation -> A/B -> promotion works;
 - score delta and policy diff are visible.
 
-### P0 - Integrate Gemini managed-agent improvement lab
+### P0 - Integrate in-app Gemini improvement service
 
 Proof gate:
 
-- managed-agent or Interactions path runs a policy/scenario/eval task;
-- environment/session id is visible when available;
-- artifacts are visible in Gemini Trace.
+- Gemini app service runs a policy/scenario/eval task;
+- managed/session API ids are visible when available;
+- generated artifacts are visible in Gemini Trace.
 
 ### P0 - Integrate Gemini computer-use audit
 

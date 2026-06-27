@@ -17,7 +17,7 @@ repeated simulated incidents.
 4. Show Gemini's initial operational plan.
 5. Show the deterministic evaluator catching a weakness.
 6. Run the improvement pass.
-7. Show Gemini's critique and managed-agent-generated policy mutation.
+7. Show Gemini's critique and app-generated policy mutation.
 8. Show A/B score improvement and policy diff.
 9. Show the promoted policy version.
 10. Show Gemini computer-use audit result.
@@ -67,7 +67,7 @@ Highlight one failure.
 Run improvement pass:
 
 - Gemini diagnoses the failure;
-- managed agent creates a candidate policy;
+- the in-app Gemini improvement service creates a candidate policy;
 - old and new policy run against the same scenarios;
 - promotion gate checks score and guardrails.
 
@@ -95,4 +95,3 @@ If API access fails during the live demo:
 - show the exact blocker in the Gemini Trace panel;
 - show where the real API call would attach;
 - do not claim the blocked integration ran live.
-

@@ -13,7 +13,7 @@ Last updated: 2026-06-27
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, and promotion gate appear |
 | Promotion | Promote candidate | Version changes and score trend updates |
-| Trace | Open Gemini Trace | Model calls, managed-agent artifacts, and audit state are visible |
+| Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Audit | Run computer-use audit | Result is visible or blocker is explicit |
 | Honesty | Inspect copy | Seeded/simulated labels are visible |
 | Safety | Inspect controls | No real launch/command/uplink claims |
@@ -56,4 +56,3 @@ Last updated: 2026-06-27
 - `source-ready`: app builds and evaluator tests pass but live demo not proven.
 - `blocked`: requires Mark/account/API/payment.
 - `not-ready`: core loop or UI proof missing.
-

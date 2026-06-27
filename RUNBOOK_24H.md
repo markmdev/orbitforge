@@ -87,7 +87,7 @@ Goals:
 - integrate Gemini critique;
 - add trace storage and UI;
 - make failed plan -> critique -> candidate policy visible;
-- research and spike managed-agent API path in parallel.
+- research and spike Gemini API feature paths in parallel.
 
 Exit criteria:
 
@@ -116,12 +116,12 @@ Exit criteria:
 
 Goals:
 
-- connect Gemini managed-agent or Interactions API surface if available;
-- mount `.agents/AGENTS.md` and `.agents/skills/` or equivalent prompt assets;
+- connect Gemini managed-agent or Interactions API surface if available through
+  the in-app `src/ai/` service layer;
 - persist environment/session id when available;
 - integrate Gemini 3.5 Flash computer-use audit or the closest live supported
   API path;
-- add visible audit and managed-agent panels.
+- add visible Gemini audit and improvement trace panels.
 
 Exit criteria:
 

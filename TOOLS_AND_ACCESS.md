@@ -10,9 +10,10 @@ Needed:
 
 - Google AI Studio API key or Google Cloud credentials with Gemini API access.
 - Access to Gemini 3.5 features required by the hackathon.
-- Confirmation of which Gemini managed-agent or Interactions API surfaces are
-  available to the account. The Gemini Antigravity IDE is not required.
 - Confirmation that Gemini 3.5 Flash computer use is available to the account.
+- Optional confirmation of which Gemini managed-agent or Interactions API
+  surfaces are available to the account. The Gemini Antigravity IDE is not
+  required, and development-time AGENTS/SKILL files are not part of the app plan.
 
 Mark action:
 

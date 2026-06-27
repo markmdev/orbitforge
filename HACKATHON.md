@@ -59,14 +59,20 @@ Gemini to improve the system that uses Gemini.
 
 ## Gemini 3.5 Prize Strategy
 
-Use at least two new Gemini surfaces as first-class product features:
+Use Gemini inside the app as a first-class product capability:
 
-- **Gemini managed agents / Interactions API if available**: use Google's API
-  agent/runtime surfaces, if exposed to the hackathon account, to run scenario
-  generation, policy mutation, or evaluation-harness work. Do not make the
-  Gemini Antigravity IDE a required dependency.
-- **Gemini 3.5 Flash Computer Use**: use screenshots/UI actions to let Gemini
-  inspect or operate the demo console and produce a UX/ops-readiness critique.
+- **Gemini 3.5 Flash Computer Use**: primary prize feature. Use screenshots/UI
+  actions to let Gemini inspect or operate the demo console and produce a
+  visible UX/ops-readiness critique.
+- **Gemini runtime self-improvement service**: use Gemini from normal app
+  modules to generate scenario variants, mutate policy text, explain failures,
+  and write versioned improvement reports.
+
+Optional API surface:
+
+- **Gemini managed agents / Interactions API if available**: only use this as an
+  in-app service wrapper if the account exposes it and it strengthens the demo.
+  Do not make the Gemini Antigravity IDE or development-time skills a dependency.
 
 Optional stretch:
 

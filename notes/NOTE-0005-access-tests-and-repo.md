@@ -22,3 +22,6 @@ GitHub plan:
 - public repo created at `https://github.com/markmdev/orbitforge`;
 - commit in small logical chunks;
 - never commit `.env.local`.
+
+Follow-up correction: remove the earlier `.agents/skills` scaffold. Gemini
+belongs in the app runtime and should be implemented as normal source modules.

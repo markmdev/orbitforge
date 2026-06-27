@@ -12,7 +12,7 @@ Recommended first build:
 - Vite + React + TypeScript frontend.
 - Static or lightweight local seeded data.
 - Local API routes or a small Node server if Gemini calls need secret handling.
-- Versioned JSON/YAML policy files for the agent.
+- Versioned JSON/YAML policy files for the in-app agent behavior.
 - Trace files for scenarios, evaluations, mutations, and promotions.
 
 ## System Components
@@ -23,7 +23,7 @@ Seeded scenario library
   -> Gemini operator agent
   -> deterministic evaluator
   -> improvement engine
-  -> Gemini managed-agent or interaction lab
+  -> Gemini runtime adapters
   -> candidate policy mutation
   -> A/B evaluation
   -> promotion gate
@@ -37,8 +37,24 @@ Seeded scenario library
 - **Scenario Lab**: seeded incidents, run history, scenario generator.
 - **Policy Lab**: current policy, candidate mutation, diff, promotion gate.
 - **Evaluation**: scorecards, trace replay, before/after comparison.
-- **Gemini Trace**: managed-agent environment id, computer-use audit, model
-  calls, generated scenario/policy artifacts.
+- **Gemini Trace**: model calls, computer-use audit, generated
+  scenario/policy artifacts, and any available Gemini API session ids.
+
+## Planned Source Ownership
+
+When source exists, keep Gemini behavior in normal app modules:
+
+- `src/ai/` for Gemini client adapters, prompts, structured output schemas, and
+  trace capture.
+- `src/domain/` for orbital compute scenarios, policies, and seeded telemetry.
+- `src/evals/` for deterministic scoring, guardrails, golden scenarios, and
+  promotion gates.
+- `src/components/` for UI surfaces that display plans, evaluations, diffs,
+  traces, and audit results.
+
+Do not create separate AGENTS/SKILL files for app runtime behavior. If Gemini
+supports managed-agent or interaction APIs, wrap them as app services under
+`src/ai/` like any other product module.
 
 ## Data Model
 
@@ -80,8 +96,9 @@ scores so the demo has a crisp before/after proof.
 1. Run current policy against scenario set.
 2. Evaluate with deterministic scorecard.
 3. Ask Gemini to analyze the failures.
-4. Ask a Gemini managed-agent or interaction session, if available, to generate
-   a candidate policy or scenario variant in a hosted/API-managed environment.
+4. Ask the in-app Gemini improvement service to generate a candidate policy or
+   scenario variant. If Gemini managed-agent or interaction APIs are available,
+   this service may call them behind the same product interface.
 5. Run candidate policy against baseline and new scenarios.
 6. Promote only if score improves and guardrails pass.
 7. Record the diff and make it visible in the dashboard.

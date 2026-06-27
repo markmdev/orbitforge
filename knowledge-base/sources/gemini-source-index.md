@@ -14,8 +14,9 @@ Last checked: 2026-06-27.
 ## Design Notes
 
 Use docs as current implementation truth during build. The hackathon prompt
-mentions managed agents, Interactions API, AGENTS.md/SKILL.md skills, and
-Gemini 3.5 Flash computer use. Gemini Antigravity is an IDE, not a required
-runtime dependency. If API details differ from the prompt when implementation
-starts, follow the live Gemini docs and label any blocked feature clearly in the
-demo.
+mentions managed agents, Interactions API, and Gemini 3.5 Flash computer use.
+Gemini must be used inside the app as a product capability, not as a
+development-time AGENTS/SKILL scaffold. Gemini Antigravity is an IDE, not a
+required runtime dependency. If API details differ from the prompt when
+implementation starts, follow the live Gemini docs and label any blocked feature
+clearly in the demo.
