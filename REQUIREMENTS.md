@@ -74,11 +74,13 @@ The system must show improvement over time:
 - store run traces and scores;
 - identify failure patterns;
 - generate or select a policy/prompt/heuristic mutation;
+- require an explicit operator improvement pass before a candidate is staged;
 - run the old and new versions against the same scenario set;
 - include generated stress drills in the current scenario sweep;
 - promote a better version only if it improves score without violating
   guardrails;
-- let the operator promote the candidate into active policy state;
+- let the operator promote the scenario-scoped candidate into active policy
+  state;
 - record promotion/reset actions in an activity log;
 - track incident readiness from real app actions such as command application,
   promotion, audit result, and report export;

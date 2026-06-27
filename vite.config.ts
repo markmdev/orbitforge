@@ -162,7 +162,7 @@ async function handleComputerAudit(req: any, res: any, geminiApiKey?: string) {
   }
 
   if (!geminiApiKey) {
-    sendJson(res, 503, { ok: false, status: 'blocked', error: 'Missing GEMINI_API_KEY' });
+    sendJson(res, 503, blockedComputerAuditResponse('Missing GEMINI_API_KEY'));
     return;
   }
 
@@ -172,7 +172,7 @@ async function handleComputerAudit(req: any, res: any, geminiApiKey?: string) {
     const screenshotBase64 = typeof body.screenshotBase64 === 'string' ? body.screenshotBase64 : '';
 
     if (!screenshotBase64) {
-      sendJson(res, 400, { ok: false, status: 'blocked', error: 'Missing audit screenshotBase64' });
+      sendJson(res, 400, blockedComputerAuditResponse('Missing audit screenshotBase64'));
       return;
     }
 
@@ -184,12 +184,34 @@ async function handleComputerAudit(req: any, res: any, geminiApiKey?: string) {
 
     sendJson(res, result.ok ? 200 : 502, result);
   } catch (error) {
-    sendJson(res, 500, {
-      ok: false,
-      status: 'blocked',
-      error: error instanceof Error ? error.message : 'Unknown Gemini computer-use audit error',
-    });
+    sendJson(
+      res,
+      500,
+      blockedComputerAuditResponse(error instanceof Error ? error.message : 'Unknown Gemini computer-use audit error'),
+    );
   }
+}
+
+function blockedComputerAuditResponse(error: string): ComputerUseResult {
+  return {
+    ok: false,
+    status: 'blocked',
+    model: 'gemini-3.5-flash',
+    latencyMs: 0,
+    promptPreview: '',
+    outputText: '',
+    actions: [
+      {
+        name: 'blocked',
+        intent: 'Computer-use audit is unavailable, so OrbitForge falls back to manual browser QA proof.',
+        safetyDecision: 'blocked',
+      },
+    ],
+    executionMode: 'propose_only',
+    promptInjectionDetection: true,
+    cacheHit: false,
+    error,
+  };
 }
 
 async function requestGeminiInteraction(options: {

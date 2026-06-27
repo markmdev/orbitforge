@@ -6,6 +6,7 @@ export type AuditSnapshotInput = {
   scenario: Scenario;
   policy: PolicyVersion;
   improvementCycle: ImprovementCycle;
+  improvementStaged: boolean;
   planTrace: GeminiPlanTrace;
   critiqueTrace: GeminiCritiqueTrace;
 };
@@ -60,10 +61,10 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Incident: ${input.scenario.incident}`,
     `Policy: ${input.policy.name}`,
     `Baseline score: ${primaryResult.baselineScore.total}`,
-    `Candidate score: ${primaryResult.candidateScore.total}`,
-    `Active delta: ${primaryResult.decision.delta}`,
-    `Average golden-scenario delta: ${input.improvementCycle.averageDelta}`,
-    `Promotion gate: ${input.improvementCycle.promoted ? 'accepted' : 'held'}`,
+    `Candidate score: ${input.improvementStaged ? primaryResult.candidateScore.total : 'not staged'}`,
+    `Active delta: ${input.improvementStaged ? primaryResult.decision.delta : '--'}`,
+    `Average golden-scenario delta: ${input.improvementStaged ? input.improvementCycle.averageDelta : '--'}`,
+    `Promotion gate: ${input.improvementStaged ? (input.improvementCycle.promoted ? 'accepted' : 'held') : 'not staged'}`,
     `Gemini plan status: ${input.planTrace.status}`,
     `Gemini critique status: ${input.critiqueTrace.status}`,
     `Critique recommendation: ${input.critiqueTrace.critique?.promotionRecommendation ?? 'unavailable'}`,

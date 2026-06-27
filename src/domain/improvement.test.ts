@@ -7,8 +7,16 @@ describe('self-improvement loop', () => {
     const cycle = runImprovementCycle(scenarios[0], policyVersions[0], scenarios, orbitalNodes, groundStations);
 
     expect(cycle.mutation.candidatePolicy.id).not.toBe(policyVersions[0].id);
+    expect(cycle.mutation.candidatePolicy.id).toContain(scenarios[0].id);
     expect(cycle.scenarioResults).toHaveLength(scenarios.length);
     expect(cycle.mutation.diff.length).toBeGreaterThan(0);
+  });
+
+  it('uses scenario-scoped candidate ids so promotion state cannot leak between scenarios', () => {
+    const wildfireCycle = runImprovementCycle(scenarios[0], policyVersions[0], scenarios, orbitalNodes, groundStations);
+    const radiationCycle = runImprovementCycle(scenarios[1], policyVersions[0], scenarios, orbitalNodes, groundStations);
+
+    expect(wildfireCycle.mutation.candidatePolicy.id).not.toBe(radiationCycle.mutation.candidatePolicy.id);
   });
 
   it('promotes the generated mutation when primary scenario improves without critical regression', () => {

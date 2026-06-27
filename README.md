@@ -14,9 +14,10 @@ The app is a runnable orbital-compute mission console. It shows:
 - Gemini 3.5 operator plan and improvement critique traces through app runtime
   API routes;
 - deterministic scorecards, policy mutation, A/B sweep, learning-memory
-  writeback, promotion gate, scenario-aware incident command deck, stateful
-  operator promotion, incident work queue, operations log, and a visible
-  unsafe-policy guardrail canary;
+  writeback, explicit operator-run improvement pass, scenario-scoped promotion
+  gate, scenario-aware incident command deck, stateful operator promotion,
+  incident work queue, operations log, and a visible unsafe-policy guardrail
+  canary;
 - seeded stress-drill generation that appends a new what-if scenario to the
   current evaluation library and gives it a command deck;
 - Gemini 3.5 Flash computer-use audit path with a generated audit frame,
@@ -34,10 +35,10 @@ blocker and falls back honestly instead of presenting fallback output as live.
 
 ```bash
 npm install
-npm run dev -- --host 127.0.0.1
+npm run dev
 ```
 
-The dev server usually lands on `http://127.0.0.1:5174/` if `5173` is occupied.
+The dev server runs at `http://127.0.0.1:5174/`, matching the runtime verifier.
 
 Useful proof commands:
 

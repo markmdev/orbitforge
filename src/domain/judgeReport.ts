@@ -4,7 +4,7 @@ export type JudgeReportInput = {
   activePolicyState: 'baseline' | 'promoted';
   baselineScore: number;
   candidatePolicyName: string;
-  candidateScore: number;
+  candidateScore: number | null;
   averageDelta: number;
   promoted: boolean;
   planStatus: string;
@@ -41,7 +41,7 @@ export function buildJudgeReport(input: JudgeReportInput): string {
     `Active policy: ${input.activePolicyName} (${input.activePolicyState})`,
     `Baseline score: ${input.baselineScore}`,
     `Candidate policy: ${input.candidatePolicyName}`,
-    `Candidate score: ${input.candidateScore}`,
+    `Candidate score: ${formatOptionalScore(input.candidateScore)}`,
     `Incident readiness: ${formatIncidentReadiness(input.incidentReadinessScore, input.incidentReadinessLabel)}`,
     `Commands applied: ${formatCommandLabels(input.appliedCommandLabels)}`,
     `Average sweep delta: ${signedDelta(input.averageDelta)}`,
@@ -72,6 +72,10 @@ function signedDelta(value: number): string {
 
 function formatReportStatus(status: string, error?: string): string {
   return error ? `${status} (${error})` : status;
+}
+
+function formatOptionalScore(score: number | null): string {
+  return typeof score === 'number' ? String(score) : 'not staged';
 }
 
 function formatIncidentReadiness(score?: number, label?: string): string {

@@ -13,7 +13,7 @@ import {
   Sparkles,
   Wrench,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildAuditSnapshot } from './ai/auditSnapshot';
 import type { GeminiComputerAuditTrace } from './ai/geminiComputerAudit';
 import { requestGeminiComputerAudit } from './ai/geminiComputerAudit';
@@ -81,10 +81,10 @@ const initialOperatorLog: OperatorLogEntry[] = [
     detail: 'Wildfire SAR Rapid Response loaded with baseline policy and seeded telemetry.',
   },
   {
-    id: 'log-evaluation-ready',
+    id: 'log-improvement-idle',
     source: 'system',
-    label: 'Candidate ready',
-    detail: 'Thermal-contact candidate generated and waiting for operator promotion.',
+    label: 'Improvement idle',
+    detail: 'Run an improvement pass from Policy Lab before a candidate can be promoted.',
   },
 ];
 
@@ -93,6 +93,8 @@ export function App() {
   const [scenarioLibrary, setScenarioLibrary] = useState(scenarios);
   const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
   const [activePolicy, setActivePolicy] = useState(baselinePolicy);
+  const [stagedImprovementKey, setStagedImprovementKey] = useState<string | null>(null);
+  const [promotedImprovementKey, setPromotedImprovementKey] = useState<string | null>(null);
   const [appliedCommandIds, setAppliedCommandIds] = useState<string[]>([]);
   const [operatorLog, setOperatorLog] = useState<OperatorLogEntry[]>(initialOperatorLog);
   const [geminiPlanTrace, setGeminiPlanTrace] = useState<GeminiPlanTrace>({
@@ -118,14 +120,17 @@ export function App() {
   const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
   const [judgeReport, setJudgeReport] = useState('');
   const [geminiRunId, setGeminiRunId] = useState(0);
+  const critiqueRequestIdRef = useRef(0);
   const activeScenario = scenarioLibrary.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const improvementCycle = useMemo(
     () => runImprovementCycle(activeScenario, baselinePolicy, scenarioLibrary, orbitalNodes, groundStations),
     [activeScenario, scenarioLibrary],
   );
+  const improvementKey = `${activeScenario.id}:${improvementCycle.mutation.id}`;
+  const improvementStaged = stagedImprovementKey === improvementKey;
   const candidatePolicy = improvementCycle.mutation.candidatePolicy;
-  const candidateAlreadyActive = activePolicy.id === candidatePolicy.id;
-  const canPromoteCandidate = improvementCycle.promoted && !candidateAlreadyActive;
+  const candidateAlreadyActive = promotedImprovementKey === improvementKey && activePolicy.id === candidatePolicy.id;
+  const canPromoteCandidate = improvementStaged && improvementCycle.promoted && !candidateAlreadyActive;
   const incidentCommands = useMemo(() => getIncidentCommands(activeScenario), [activeScenario]);
   const incidentCommandSummary = useMemo(
     () => summarizeIncidentCommands(activeScenario, appliedCommandIds),
@@ -173,6 +178,12 @@ export function App() {
         complete: incidentCommandSummary.stabilized,
       },
       {
+        id: 'run-improvement',
+        label: 'Run improvement pass',
+        detail: 'Stage a scenario-scoped candidate from evaluator failures and Gemini critique.',
+        complete: improvementStaged,
+      },
+      {
         id: 'promote-candidate',
         label: 'Promote candidate policy',
         detail: 'Make the thermal-contact candidate the active operator policy.',
@@ -195,6 +206,7 @@ export function App() {
       candidateAlreadyActive,
       computerAuditTrace.status,
       guardrailCanary.decision.promoted,
+      improvementStaged,
       incidentCommandSummary.stabilized,
       judgeReport.length,
     ],
@@ -216,14 +228,28 @@ export function App() {
       },
       {
         ...traceEvents[2],
-        source: geminiCritiqueTrace.status === 'live' ? 'gemini-live' : geminiCritiqueTrace.status === 'loading' ? 'operator' : 'gemini-fallback',
-        status: geminiCritiqueTrace.status === 'loading' ? 'running' : geminiCritiqueTrace.status === 'live' ? 'complete' : 'blocked',
+        source:
+          geminiCritiqueTrace.status === 'live'
+            ? 'gemini-live'
+            : geminiCritiqueTrace.status === 'fallback'
+              ? 'gemini-fallback'
+              : 'operator',
+        status:
+          geminiCritiqueTrace.status === 'idle'
+            ? 'ready'
+            : geminiCritiqueTrace.status === 'loading'
+              ? 'running'
+              : geminiCritiqueTrace.status === 'live'
+                ? 'complete'
+                : 'blocked',
         detail: getGeminiCritiqueDetail(geminiCritiqueTrace),
       },
       {
         ...traceEvents[3],
-        status: 'complete',
-        detail: `App-owned evaluator swept ${scenarioLibrary.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`,
+        status: improvementStaged ? 'complete' : 'ready',
+        detail: improvementStaged
+          ? `App-owned evaluator swept ${scenarioLibrary.length} seeded scenarios; average candidate delta ${signedDelta(improvementCycle.averageDelta)}; ${improvementCycle.promoted ? 'promotion accepted' : 'promotion held'}.`
+          : `App-owned evaluator is ready; run improvement pass to stage a candidate across ${scenarioLibrary.length} seeded scenarios.`,
       },
       {
         ...traceEvents[4],
@@ -239,6 +265,7 @@ export function App() {
       geminiPlanTrace,
       improvementCycle.averageDelta,
       improvementCycle.promoted,
+      improvementStaged,
       scenarioLibrary.length,
     ],
   );
@@ -246,6 +273,9 @@ export function App() {
     setScenarioLibrary(scenarios);
     setActiveScenarioId(scenarios[0].id);
     setActivePolicy(baselinePolicy);
+    setStagedImprovementKey(null);
+    setPromotedImprovementKey(null);
+    critiqueRequestIdRef.current += 1;
     setAppliedCommandIds([]);
     setOperatorLog([
       {
@@ -262,6 +292,7 @@ export function App() {
       executionMode: 'propose_only',
       actions: [],
     });
+    setGeminiCritiqueTrace({ status: 'idle', model: 'gemini-3.5-flash' });
     setReportStatus('idle');
     setJudgeReport('');
     setActiveView('console');
@@ -272,6 +303,7 @@ export function App() {
     }
 
     setActivePolicy(candidatePolicy);
+    setPromotedImprovementKey(improvementKey);
     setOperatorLog((entries) => [
       {
         id: `log-promote-${Date.now()}`,
@@ -301,12 +333,52 @@ export function App() {
       ...entries,
     ]);
   };
+  const runImprovementPass = () => {
+    const requestId = critiqueRequestIdRef.current + 1;
+    critiqueRequestIdRef.current = requestId;
+    setStagedImprovementKey(improvementKey);
+    setPromotedImprovementKey(null);
+    setActivePolicy(baselinePolicy);
+    setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
+    setOperatorLog((entries) => [
+      {
+        id: `log-improvement-${activeScenario.id}-${Date.now()}`,
+        source: 'operator',
+        label: 'Improvement pass run',
+        detail: `${improvementCycle.mutation.summary} Candidate ${candidatePolicy.name} is staged for promotion review.`,
+      },
+      ...entries,
+    ]);
+    requestGeminiCritique({
+      scenario: activeScenario,
+      baselinePolicy,
+      candidatePolicy,
+      baselineScore,
+      candidateScore,
+      mutation: improvementCycle.mutation,
+      scenarioResults: improvementCycle.scenarioResults,
+      promotionDecision: {
+        promoted: improvementCycle.promoted,
+        averageDelta: improvementCycle.averageDelta,
+        reasons: improvementCycle.reasons,
+        scenarioCount: scenarioLibrary.length,
+      },
+    }).then((trace) => {
+      if (critiqueRequestIdRef.current === requestId) {
+        setGeminiCritiqueTrace(trace);
+      }
+    });
+  };
   const generateStressDrill = () => {
     const drillSequence = scenarioLibrary.filter((scenario) => scenario.id.startsWith('stress-')).length + 1;
     const drill = createStressDrill(activeScenario, drillSequence);
 
     setScenarioLibrary((library) => [...library, drill]);
     setActiveScenarioId(drill.id);
+    setActivePolicy(baselinePolicy);
+    setStagedImprovementKey(null);
+    setPromotedImprovementKey(null);
+    critiqueRequestIdRef.current += 1;
     setAppliedCommandIds([]);
     setComputerAuditTrace({
       status: 'idle',
@@ -314,6 +386,7 @@ export function App() {
       executionMode: 'propose_only',
       actions: [],
     });
+    setGeminiCritiqueTrace({ status: 'idle', model: 'gemini-3.5-flash' });
     setReportStatus('idle');
     setJudgeReport('');
     setOperatorLog((entries) => [
@@ -333,10 +406,10 @@ export function App() {
       activePolicyName: activePolicy.name,
       activePolicyState: candidateAlreadyActive ? 'promoted' : 'baseline',
       baselineScore: baselineScore.total,
-      candidatePolicyName: candidatePolicy.name,
-      candidateScore: candidateScore.total,
-      averageDelta: improvementCycle.averageDelta,
-      promoted: improvementCycle.promoted,
+      candidatePolicyName: improvementStaged ? candidatePolicy.name : 'not staged',
+      candidateScore: improvementStaged ? candidateScore.total : null,
+      averageDelta: improvementStaged ? improvementCycle.averageDelta : 0,
+      promoted: improvementStaged && improvementCycle.promoted,
       planStatus: geminiPlanTrace.status,
       planError: geminiPlanTrace.error,
       critiqueStatus: geminiCritiqueTrace.status,
@@ -376,6 +449,7 @@ export function App() {
         scenario: activeScenario,
         policy: activePolicy,
         improvementCycle,
+        improvementStaged,
         planTrace: geminiPlanTrace,
         critiqueTrace: geminiCritiqueTrace,
       });
@@ -390,6 +464,8 @@ export function App() {
         status: 'fallback',
         model: 'gemini-fallback',
         error: error instanceof Error ? error.message : 'Unknown local audit snapshot failure',
+        executionMode: 'propose_only',
+        promptInjectionDetection: true,
         actions: [
           {
             name: 'blocked',
@@ -419,7 +495,6 @@ export function App() {
     let isCurrent = true;
 
     setGeminiPlanTrace({ status: 'loading', model: 'gemini-3.5-flash' });
-    setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     requestGeminiPlan({
       scenario: activeScenario,
       baselinePolicy,
@@ -430,30 +505,10 @@ export function App() {
         setGeminiPlanTrace(trace);
       }
     });
-    requestGeminiCritique({
-      scenario: activeScenario,
-      baselinePolicy,
-      candidatePolicy,
-      baselineScore,
-      candidateScore,
-      mutation: improvementCycle.mutation,
-      scenarioResults: improvementCycle.scenarioResults,
-      promotionDecision: {
-        promoted: improvementCycle.promoted,
-        averageDelta: improvementCycle.averageDelta,
-        reasons: improvementCycle.reasons,
-        scenarioCount: scenarioLibrary.length,
-      },
-    }).then((trace) => {
-      if (isCurrent) {
-        setGeminiCritiqueTrace(trace);
-      }
-    });
-
     return () => {
       isCurrent = false;
     };
-  }, [activeScenario.id, geminiRunId, scenarioLibrary.length]);
+  }, [activeScenario.id, geminiRunId]);
 
   return (
     <main className="app-shell">
@@ -618,11 +673,12 @@ export function App() {
               </div>
               <div className="comparison-row">
                 <Metric label={baselinePolicy.name} value={String(baselineScore.total)} />
-                <Metric label={candidatePolicy.name} value={String(candidateScore.total)} />
+                <Metric label={candidatePolicy.name} value={improvementStaged ? String(candidateScore.total) : 'Run pass'} />
               </div>
               <div className="delta-banner">
-                {primaryResult.decision.delta > 0 ? '+' : ''}{primaryResult.decision.delta} points on active incident;
-                {' '}{improvementCycle.averageDelta > 0 ? '+' : ''}{improvementCycle.averageDelta} average across golden scenarios
+                {improvementStaged
+                  ? `${primaryResult.decision.delta > 0 ? '+' : ''}${primaryResult.decision.delta} points on active incident; ${improvementCycle.averageDelta > 0 ? '+' : ''}${improvementCycle.averageDelta} average across golden scenarios`
+                  : 'Run an improvement pass in Policy Lab to stage a scenario-scoped candidate.'}
               </div>
             </section>
 
@@ -716,6 +772,10 @@ export function App() {
                   type="button"
                   onClick={() => {
                     setActiveScenarioId(scenario.id);
+                    setActivePolicy(baselinePolicy);
+                    setStagedImprovementKey(null);
+                    setPromotedImprovementKey(null);
+                    critiqueRequestIdRef.current += 1;
                     setAppliedCommandIds([]);
                     setComputerAuditTrace({
                       status: 'idle',
@@ -725,6 +785,7 @@ export function App() {
                     });
                     setReportStatus('idle');
                     setJudgeReport('');
+                    setGeminiCritiqueTrace({ status: 'idle', model: 'gemini-3.5-flash' });
                     setOperatorLog((entries) => [
                       {
                         id: `log-scenario-${scenario.id}-${Date.now()}`,
@@ -760,17 +821,17 @@ export function App() {
             <div className="evaluation-summary">
               <article>
                 <p className="eyebrow">Active incident delta</p>
-                <strong>{signedDelta(primaryResult.decision.delta)}</strong>
-                <span>{primaryResult.decision.reasons[0]}</span>
+                <strong>{improvementStaged ? signedDelta(primaryResult.decision.delta) : '--'}</strong>
+                <span>{improvementStaged ? primaryResult.decision.reasons[0] : 'Run improvement pass to compare a staged candidate.'}</span>
               </article>
               <article>
                 <p className="eyebrow">Promotion gate</p>
-                <strong>{improvementCycle.promoted ? 'Accepted' : 'Held'}</strong>
-                <span>{improvementCycle.reasons[improvementCycle.reasons.length - 1]}</span>
+                <strong>{improvementStaged ? (improvementCycle.promoted ? 'Accepted' : 'Held') : 'Not staged'}</strong>
+                <span>{improvementStaged ? improvementCycle.reasons[improvementCycle.reasons.length - 1] : 'No candidate is eligible for promotion yet.'}</span>
               </article>
               <article>
                 <p className="eyebrow">Golden sweep</p>
-                <strong>{signedDelta(improvementCycle.averageDelta)}</strong>
+                <strong>{improvementStaged ? signedDelta(improvementCycle.averageDelta) : '--'}</strong>
                 <span>{scenarioLibrary.length} seeded scenarios checked for regression.</span>
               </article>
             </div>
@@ -779,7 +840,11 @@ export function App() {
                 <Metric
                   key={dimension.key}
                   label={dimension.label}
-                  value={`${baselineScore.dimensions[dimension.key]} -> ${candidateScore.dimensions[dimension.key]}`}
+                  value={
+                    improvementStaged
+                      ? `${baselineScore.dimensions[dimension.key]} -> ${candidateScore.dimensions[dimension.key]}`
+                      : `${baselineScore.dimensions[dimension.key]} -> --`
+                  }
                 />
               ))}
             </div>
@@ -793,17 +858,23 @@ export function App() {
             <p className="eyebrow sweep-label">Golden scenario sweep</p>
             <div className="scenario-table compact-table">
               {improvementCycle.scenarioResults.map((result) => {
-                const scenario = scenarios.find((item) => item.id === result.scenarioId);
+                const scenario = scenarioLibrary.find((item) => item.id === result.scenarioId);
 
                 return (
                   <article className="score-sweep-row" key={result.scenarioId}>
                     <div>
                       <strong>{scenario?.name ?? result.scenarioId}</strong>
-                      <span>{result.candidateScore.failures.length > 0 ? result.candidateScore.failures.join(', ') : 'No candidate failures below threshold.'}</span>
+                      <span>
+                        {improvementStaged
+                          ? result.candidateScore.failures.length > 0
+                            ? result.candidateScore.failures.join(', ')
+                            : 'No candidate failures below threshold.'
+                          : 'Candidate not staged yet.'}
+                      </span>
                     </div>
                     <Metric label="Baseline" value={String(result.baselineScore.total)} />
-                    <Metric label="Candidate" value={String(result.candidateScore.total)} />
-                    <Metric label="Delta" value={signedDelta(result.decision.delta)} />
+                    <Metric label="Candidate" value={improvementStaged ? String(result.candidateScore.total) : '--'} />
+                    <Metric label="Delta" value={improvementStaged ? signedDelta(result.decision.delta) : '--'} />
                   </article>
                 );
               })}
@@ -826,22 +897,33 @@ export function App() {
               </div>
               <div>
                 <p className="eyebrow">Candidate</p>
-                <strong>{candidatePolicy.name}</strong>
-                <span>{candidatePolicy.summary}</span>
+                <strong>{improvementStaged ? candidatePolicy.name : 'Not staged'}</strong>
+                <span>{improvementStaged ? candidatePolicy.summary : 'Run improvement pass to create the candidate patch.'}</span>
               </div>
             </div>
             <div className="delta-banner">
-              {improvementCycle.promoted ? 'Promotion accepted' : 'Promotion held'}: {improvementCycle.reasons[0]}
-              {' '}Average sweep {signedDelta(improvementCycle.averageDelta)}.
+              {improvementStaged
+                ? `${improvementCycle.promoted ? 'Promotion accepted' : 'Promotion held'}: ${improvementCycle.reasons[0]} Average sweep ${signedDelta(improvementCycle.averageDelta)}.`
+                : 'Run improvement pass to create a scenario-scoped candidate patch.'}
             </div>
             <div className="delta-banner memory-banner">
               <strong>Learning memory write</strong>
               <span>
-                {' '}Seeded memory records {activeScenario.id} failure signature {learningFailureSignature} as candidate patch;
-                retained only after golden sweep {signedDelta(improvementCycle.averageDelta)} and guardrail canary hold.
+                {' '}
+                {improvementStaged
+                  ? `Seeded memory records ${activeScenario.id} failure signature ${learningFailureSignature} as candidate patch; retained only after golden sweep ${signedDelta(improvementCycle.averageDelta)} and guardrail canary hold.`
+                  : `No candidate memory has been written for ${activeScenario.id} yet.`}
               </span>
             </div>
             <div className="workflow-actions">
+              <button
+                className="reset-button primary-action"
+                type="button"
+                onClick={runImprovementPass}
+              >
+                <Sparkles size={16} />
+                {improvementStaged ? 'Refresh improvement pass' : 'Run improvement pass'}
+              </button>
               <button
                 className="reset-button primary-action"
                 type="button"
@@ -852,27 +934,33 @@ export function App() {
                 {candidateAlreadyActive ? 'Candidate active' : 'Promote candidate'}
               </button>
               <span className={candidateAlreadyActive ? 'report-status copied' : 'report-status'}>
-                {candidateAlreadyActive ? `${candidatePolicy.name} is active` : 'Candidate is staged for operator approval'}
+                {candidateAlreadyActive
+                  ? `${candidatePolicy.name} is active`
+                  : improvementStaged
+                    ? 'Candidate is staged for operator approval'
+                    : 'No candidate staged'}
               </span>
             </div>
-            <div className="diff-list">
-              {improvementCycle.mutation.diff.map((line) => (
-                <code key={line}>{line}</code>
-              ))}
-            </div>
+            {improvementStaged && (
+              <div className="diff-list">
+                {improvementCycle.mutation.diff.map((line) => (
+                  <code key={line}>{line}</code>
+                ))}
+              </div>
+            )}
             <div className="scenario-table compact-table">
               {improvementCycle.scenarioResults.map((result) => {
-                const scenario = scenarios.find((item) => item.id === result.scenarioId);
+                const scenario = scenarioLibrary.find((item) => item.id === result.scenarioId);
 
                 return (
                   <article className="score-sweep-row" key={result.scenarioId}>
                     <div>
                       <strong>{scenario?.name ?? result.scenarioId}</strong>
-                      <span>{result.decision.reasons[0]}</span>
+                      <span>{improvementStaged ? result.decision.reasons[0] : 'Waiting for explicit improvement run.'}</span>
                     </div>
                     <Metric label="Baseline" value={String(result.baselineScore.total)} />
-                    <Metric label="Candidate" value={String(result.candidateScore.total)} />
-                    <Metric label="Delta" value={`${result.decision.delta > 0 ? '+' : ''}${result.decision.delta}`} />
+                    <Metric label="Candidate" value={improvementStaged ? String(result.candidateScore.total) : '--'} />
+                    <Metric label="Delta" value={improvementStaged ? `${result.decision.delta > 0 ? '+' : ''}${result.decision.delta}` : '--'} />
                   </article>
                 );
               })}

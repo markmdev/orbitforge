@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { parseGeminiCritiqueText, parseGeminiPlanText, requestGeminiCritique } from './geminiPlan';
+import { parseGeminiCritiqueText, parseGeminiPlanText, requestGeminiCritique, requestGeminiPlan } from './geminiPlan';
 
 const originalFetch = globalThis.fetch;
 
@@ -20,6 +20,34 @@ describe('Gemini plan parser', () => {
 
   it('rejects malformed plan output', () => {
     expect(() => parseGeminiPlanText('{"placement":"split"}')).toThrow(/rationale/);
+  });
+
+  it('uses the active scenario when the operator plan falls back', async () => {
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ ok: false, error: 'quota blocked' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+    const trace = await requestGeminiPlan({
+      scenario: {
+        name: 'Radiation Spike During Inference',
+        incident: 'ECC anomaly during accelerator run',
+        workload: 'Event validation and confidence repair',
+        freshnessMinutes: 30,
+        deadlinePressure: 72,
+        radiationSensitivity: 88,
+      },
+      baselinePolicy: { id: 'policy-v0' },
+      baselineScore: { total: 81 },
+      mutation: { summary: 'Raise radiation confidence.' },
+    });
+
+    expect(trace.status).toBe('fallback');
+    expect(trace.plan?.rationale).toContain('Radiation Spike During Inference');
+    expect(trace.plan?.rationale).toContain('validation-first');
+    expect(trace.plan?.rationale).not.toContain('wildfire');
+    expect(trace.plan?.constraintsUsed).toContain('radiation');
   });
 });
 

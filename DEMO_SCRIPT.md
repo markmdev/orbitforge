@@ -95,8 +95,10 @@ the deterministic promotion gate.
 
 Run improvement pass:
 
-- Gemini diagnoses the failure;
-- the in-app Gemini improvement service creates a candidate policy;
+- click `Run improvement pass`;
+- Gemini critique diagnoses the deterministic failure or shows the exact quota
+  fallback;
+- the in-app improvement service stages a scenario-scoped candidate policy;
 - old and new policy run against the same scenarios;
 - Policy Lab records a seeded learning-memory write from failure signature to
   candidate patch;
@@ -107,9 +109,9 @@ Click `Promote candidate`, then show the Console:
 - active policy changes to `v1 generated thermal-contact candidate`;
 - active score changes from `70` to `85`;
 - operations log records `Candidate promoted`.
-- incident work queue moves from `1/5` to `2/5` after command stabilization,
-  then to `3/5` after promotion, `4/5` after audit result, and `5/5` after
-  report export.
+- incident work queue moves from `1/6` to `2/6` after command stabilization,
+  then to `3/6` after improvement pass, `4/6` after promotion, `5/6` after
+  audit result, and `6/6` after report export.
 
 Show diff, score delta, and the fact that `Reset demo` restores the baseline.
 
@@ -155,18 +157,19 @@ Before handing the app to judges:
 3. Confirm the active incident is `Wildfire SAR Rapid Response`.
 4. Confirm the baseline risk copy is visible:
    `Baseline policy favors hot accelerator node and misses optical outage.`
-5. Confirm Policy Lab still shows `Candidate policy patch`, active delta `+15`,
-   and `Average sweep +11`.
+5. Confirm Policy Lab starts with no staged candidate, then click
+   `Run improvement pass` and confirm candidate patch, active delta `+15`, and
+   `Average sweep +11` appear.
 6. Optionally generate one stress drill and confirm reset can restore the
    library to 3 scenarios.
 7. Apply the three incident commands and confirm readiness reaches stabilized
    state.
 8. Click `Promote candidate`, confirm Console shows active policy score `85`,
    and confirm operations log includes `Candidate promoted`.
-9. Confirm incident work queue reaches `5/5` after audit result and report
+9. Confirm incident work queue reaches `6/6` after audit result and report
    export.
 10. Click `Reset demo`, confirm active policy score returns to `70` and work
-   queue returns to `1/5`.
+   queue returns to `1/6`.
 11. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
 12. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
@@ -180,7 +183,8 @@ Latest rehearsal proof:
   status, and ground contact strip.
 - Evaluation showed `Guardrail canary held` and blocked the unsafe overclaiming
   canary at guardrail score 25.
-- Policy Lab showed candidate patch, `+15`, and `Average sweep +11`.
+- Policy Lab initially showed no staged candidate; after `Run improvement pass`
+  it showed candidate patch, `+15`, and `Average sweep +11`.
 - Policy Lab showed `Learning memory write` for `wildfire-sar`, `thermal:21`,
   `contact:27`, golden sweep `+11`, and guardrail canary hold.
 - Scenario Lab generated `Stress Drill 01: Wildfire SAR Rapid Response`,
@@ -194,14 +198,19 @@ Latest rehearsal proof:
   `Split preprocessing to Kepler-2`, and `Attach confidence watermark`, raising
   seeded readiness from `45%` active to `82%` stabilized and recording each
   command in the operations log.
-- Policy Lab `Promote candidate` changed active policy to
+- Policy Lab `Run improvement pass` wrote `Improvement pass run` to the
+  operations log, and `Promote candidate` changed active policy to
   `v1 generated thermal-contact candidate`, updated active score from `70` to
   `85`, and wrote `Candidate promoted` to the operations log.
-- Incident work queue moved from `1/5` to `5/5` as command stabilization,
-  promotion, audit result, and report export completed; reset restored it to
-  `1/5`.
+- Incident work queue moved from `1/6` to `6/6` as command stabilization,
+  improvement pass, promotion, audit result, and report export completed; reset
+  restored it to `1/6`.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
-  fallback state with `Modepropose-only` and `Prompt guardenabled`.
+  fallback state with `Modepropose-only`, `Prompt guardenabled`, audit-frame
+  `Candidate score: 85`, and `Promotion gate: accepted`.
+- After promotion, selecting `Radiation Spike During Inference` reset active
+  policy to baseline, active score to `81`, work queue to `1/6`, and the
+  fallback plan switched to radiation validation copy instead of wildfire copy.
 - Copy report included `Computer-use mode: propose-only`,
   `Prompt-injection guard: enabled`, active policy state, incident readiness,
   applied commands, runtime health, and seeded telemetry guardrail.

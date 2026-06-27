@@ -69,7 +69,7 @@ export function createPolicyMutation(
   const failureDimensions = score.failures.map((failure) => failure.split(':')[0]);
   const candidatePolicy: PolicyVersion = {
     ...policy,
-    id: `${policy.id}-thermal-contact-candidate`,
+    id: `${policy.id}-${scenario.id}-thermal-contact-candidate`,
     name: 'v1 generated thermal-contact candidate',
     summary: 'Generated mutation that raises thermal, contact, and confidence weighting while reducing compute urgency.',
     weights: {

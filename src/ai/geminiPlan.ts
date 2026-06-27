@@ -71,7 +71,7 @@ export async function requestGeminiPlan(request: GeminiPlanRequest): Promise<Gem
     const body = await response.json();
 
     if (!response.ok || !body.ok) {
-      return fallbackPlanTrace(body.error ?? `Gemini request failed with ${response.status}`, body);
+      return fallbackPlanTrace(body.error ?? `Gemini request failed with ${response.status}`, request, body);
     }
 
     const plan = parseGeminiPlanText(body.outputText ?? '');
@@ -87,7 +87,7 @@ export async function requestGeminiPlan(request: GeminiPlanRequest): Promise<Gem
       plan,
     };
   } catch (error) {
-    return fallbackPlanTrace(error instanceof Error ? error.message : 'Unknown Gemini request failure');
+    return fallbackPlanTrace(error instanceof Error ? error.message : 'Unknown Gemini request failure', request);
   }
 }
 
@@ -150,7 +150,14 @@ export function parseGeminiCritiqueText(text: string): GeminiCritique {
   };
 }
 
-function fallbackPlanTrace(error: string, partial?: Partial<GeminiPlanTrace>): GeminiPlanTrace {
+function fallbackPlanTrace(
+  error: string,
+  request: GeminiPlanRequest,
+  partial?: Partial<GeminiPlanTrace>,
+): GeminiPlanTrace {
+  const scenario = extractScenarioContext(request.scenario);
+  const fallbackPlan = buildScenarioAwareFallbackPlan(scenario);
+
   return {
     status: 'fallback',
     model: partial?.model ?? 'gemini-fallback',
@@ -160,16 +167,94 @@ function fallbackPlanTrace(error: string, partial?: Partial<GeminiPlanTrace>): G
     outputText: partial?.outputText,
     cacheHit: partial?.cacheHit,
     error,
-    plan: {
-      placement: 'split',
-      rationale:
-        'Fallback plan splits wildfire SAR preprocessing away from the thermally constrained accelerator and routes downlink through the hybrid station.',
-      constraintsUsed: ['freshness', 'thermal', 'contact', 'seeded-data'],
-      risks: ['live-gemini-unavailable', 'requires-manual-verification'],
-      confidence: 62,
-      recommendedPolicyPatch: 'Raise thermal/contact weighting and keep seeded-data guardrails visible.',
-    },
+    plan: fallbackPlan,
   };
+}
+
+type ScenarioContext = {
+  name: string;
+  incident: string;
+  workload: string;
+  freshnessMinutes: number | null;
+  deadlinePressure: number | null;
+  thermalSensitivity: number | null;
+  contactSensitivity: number | null;
+  radiationSensitivity: number | null;
+};
+
+function extractScenarioContext(value: unknown): ScenarioContext {
+  const scenario = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+
+  return {
+    name: readString(scenario.name, 'active seeded scenario'),
+    incident: readString(scenario.incident, 'current seeded incident'),
+    workload: readString(scenario.workload, 'seeded orbital workload'),
+    freshnessMinutes: readNumber(scenario.freshnessMinutes),
+    deadlinePressure: readNumber(scenario.deadlinePressure),
+    thermalSensitivity: readNumber(scenario.thermalSensitivity),
+    contactSensitivity: readNumber(scenario.contactSensitivity),
+    radiationSensitivity: readNumber(scenario.radiationSensitivity),
+  };
+}
+
+function buildScenarioAwareFallbackPlan(scenario: ScenarioContext): GeminiOperatorPlan {
+  const name = scenario.name.toLowerCase();
+  const incident = scenario.incident.toLowerCase();
+  const workload = scenario.workload.toLowerCase();
+  const constraints = ['seeded-data'];
+
+  if ((scenario.deadlinePressure ?? 0) > 70 || scenario.freshnessMinutes !== null && scenario.freshnessMinutes <= 30) {
+    constraints.push('freshness');
+  }
+
+  if ((scenario.thermalSensitivity ?? 0) > 55 || incident.includes('thermal')) {
+    constraints.push('thermal');
+  }
+
+  if ((scenario.contactSensitivity ?? 0) > 55 || incident.includes('contact') || incident.includes('outage')) {
+    constraints.push('contact');
+  }
+
+  if ((scenario.radiationSensitivity ?? 0) > 55 || name.includes('radiation') || incident.includes('ecc')) {
+    constraints.push('radiation');
+
+    return {
+      placement: 'split',
+      rationale: `Fallback plan for ${scenario.name} keeps ${scenario.workload} in a validation-first split path, rerunning confidence-sensitive work away from the anomalous accelerator before releasing results.`,
+      constraintsUsed: Array.from(new Set([...constraints, 'confidence'])),
+      risks: ['live-gemini-unavailable', 'radiation-validation-needed', 'requires-manual-verification'],
+      confidence: 58,
+      recommendedPolicyPatch: 'Raise radiation and confidence weighting before accepting accelerator output under ECC anomalies.',
+    };
+  }
+
+  if (name.includes('climate') || workload.includes('climate') || (scenario.freshnessMinutes ?? 0) >= 240) {
+    return {
+      placement: 'earth_cloud',
+      rationale: `Fallback plan for ${scenario.name} treats ${scenario.workload} as non-urgent orbital preprocessing, preserving onboard thermal and storage margin while shifting aggregation to Earth cloud capacity.`,
+      constraintsUsed: Array.from(new Set([...constraints, 'storage', 'cost'])),
+      risks: ['live-gemini-unavailable', 'batch-latency-acceptable', 'requires-manual-verification'],
+      confidence: 64,
+      recommendedPolicyPatch: 'Lower deadline urgency for long-window reprocessing and protect orbital compute for time-critical incidents.',
+    };
+  }
+
+  return {
+    placement: 'split',
+    rationale: `Fallback plan for ${scenario.name} splits ${scenario.workload} so orbital preprocessing only runs where thermal and contact-window constraints fit the seeded incident: ${scenario.incident}.`,
+    constraintsUsed: Array.from(new Set([...constraints, 'freshness', 'thermal', 'contact'])),
+    risks: ['live-gemini-unavailable', 'requires-manual-verification'],
+    confidence: 62,
+    recommendedPolicyPatch: 'Raise thermal/contact weighting and keep seeded-data guardrails visible.',
+  };
+}
+
+function readString(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.trim() !== '' ? value : fallback;
+}
+
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function fallbackCritiqueTrace(

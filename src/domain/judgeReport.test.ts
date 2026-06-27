@@ -47,4 +47,24 @@ describe('judge report', () => {
     expect(formatPromptGuard(undefined)).toBe('--');
     expect(formatPromptGuard(false)).toBe('--');
   });
+
+  it('reports unstaged candidates honestly', () => {
+    const report = buildJudgeReport({
+      activeScenarioName: 'Wildfire SAR Rapid Response',
+      activePolicyName: 'v0 deadline-first',
+      activePolicyState: 'baseline',
+      baselineScore: 70,
+      candidatePolicyName: 'not staged',
+      candidateScore: null,
+      averageDelta: 0,
+      promoted: false,
+      planStatus: 'fallback',
+      critiqueStatus: 'idle',
+      auditStatus: 'idle',
+    });
+
+    expect(report).toContain('Candidate policy: not staged');
+    expect(report).toContain('Candidate score: not staged');
+    expect(report).toContain('Promotion gate: held');
+  });
 });

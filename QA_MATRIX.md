@@ -14,8 +14,8 @@ Last updated: 2026-06-27
 | Gemini plan | Generate plan | Plan appears with placement, reasoning, risk, confidence |
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
-| Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion |
-| Work queue | Complete demo actions | Readiness moves from `1/5` to `5/5` as commands, promotion, audit run, and report export complete |
+| Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion without leaking across scenarios |
+| Work queue | Complete demo actions | Readiness moves from `1/6` to `6/6` as commands, improvement, promotion, audit run, and report export complete |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Runtime health | Open Console | Gemini runtime health strip shows configured/blocked state from `/api/gemini/health` |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
@@ -43,27 +43,40 @@ Current browser proof surfaces:
   from `34%` active to `83%` stabilized.
 - Gemini Trace: plan, critique, and computer-use audit panels preserve
   prompt/output previews and label live/fallback state.
+- Explicit improvement pass: first load shows no staged candidate, Policy Lab
+  `Run improvement pass` stages a scenario-scoped candidate, and only then can
+  `Promote candidate` run.
+- Scenario reset proof: after promoting the wildfire candidate, selecting
+  `Radiation Spike During Inference` resets active policy to `v0
+  deadline-first`, active score to `81`, work queue to `1/6`, and improvement
+  proof to `Run pass`.
+- Scenario-aware fallback proof: when Gemini quota blocks the radiation plan,
+  the visible fallback explains a validation-first radiation path and does not
+  reuse wildfire fallback copy.
 - Runtime health: Console shows `/api/gemini/health` status as `configured`,
   displays trace cache count, and judge report exports the runtime health line.
 - Evaluation: guardrail canary is visible and blocks unsafe overclaiming
   mutation with deterministic evaluator proof.
 - Policy Lab: learning-memory write is visible and ties current scenario,
   failure signature, golden sweep, and guardrail canary hold together.
-- Stateful workflow: Policy Lab `Promote candidate` changes active policy from
-  `v0 deadline-first` to `v1 generated thermal-contact candidate`, updates
-  active policy score from `70` to `85`, records `Candidate promoted` in the
+- Stateful workflow: Policy Lab `Run improvement pass` stages the candidate,
+  then `Promote candidate` changes active policy from `v0 deadline-first` to
+  `v1 generated thermal-contact candidate`, updates active policy score from
+  `70` to `85`, records `Improvement pass run` and `Candidate promoted` in the
   operations log, and `Reset demo` restores baseline state.
-- Incident work queue: starts at `1/5`, moves to `2/5` after incident
-  stabilization, `3/5` after promotion, `4/5` after audit fallback/live
-  result, `5/5` after report export, and resets to `1/5`.
+- Incident work queue: starts at `1/6`, moves to `2/6` after incident
+  stabilization, `3/6` after improvement pass, `4/6` after promotion, `5/6`
+  after audit fallback/live result, `6/6` after report export, and resets to
+  `1/6`.
 - Mobile command/queue proof: at `390x844`, command buttons and queue rows fit
   within `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Mobile runtime-health proof: at `390x844`, health strip fits within
   `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Computer-use audit: Trace and judge report surface propose-only mode,
-  prompt-injection guard state, and exact quota blocker when quota blocks live
-  output.
-- Browser console warnings/errors should be empty after each QA pass.
+  prompt-injection guard state, exact quota blocker when quota blocks live
+  output, and the audit-frame state including `Candidate score: 85` plus
+  `Promotion gate: accepted` after promotion.
+- Browser console warnings/errors were empty in the final browser QA pass.
 
 ## Product Depth QA
 

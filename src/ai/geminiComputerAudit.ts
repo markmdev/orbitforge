@@ -43,14 +43,17 @@ export async function requestGeminiComputerAudit(
     const body = await response.json();
 
     if (!response.ok || !body.ok) {
-      return fallbackComputerAuditTrace(body.error ?? `Gemini computer-use audit failed with ${response.status}`, body);
+      return fallbackComputerAuditTrace(body.error ?? `Gemini computer-use audit failed with ${response.status}`, {
+        ...body,
+        promptPreview: buildAuditPromptPreview(request, body.promptPreview),
+      });
     }
 
     return {
       status: 'live',
       model: body.model ?? 'gemini-3.5-flash',
       latencyMs: body.latencyMs,
-      promptPreview: body.promptPreview,
+      promptPreview: buildAuditPromptPreview(request, body.promptPreview),
       outputText: body.outputText,
       cacheHit: body.cacheHit,
       executionMode: typeof body.executionMode === 'string' ? body.executionMode : undefined,
@@ -60,6 +63,11 @@ export async function requestGeminiComputerAudit(
   } catch (error) {
     return fallbackComputerAuditTrace(
       error instanceof Error ? error.message : 'Unknown Gemini computer-use audit failure',
+      {
+        executionMode: 'propose_only',
+        promptInjectionDetection: true,
+        promptPreview: buildAuditPromptPreview(request),
+      },
     );
   }
 }
@@ -95,8 +103,8 @@ function fallbackComputerAuditTrace(
     promptPreview: partial?.promptPreview,
     outputText: partial?.outputText,
     cacheHit: partial?.cacheHit,
-    executionMode: partial?.executionMode,
-    promptInjectionDetection: partial?.promptInjectionDetection,
+    executionMode: partial?.executionMode ?? 'propose_only',
+    promptInjectionDetection: partial?.promptInjectionDetection ?? true,
     error,
     actions: normalizeAuditActions(partial?.actions).length > 0
       ? normalizeAuditActions(partial?.actions)
@@ -106,6 +114,27 @@ function fallbackComputerAuditTrace(
             intent: 'Computer-use audit is unavailable, so OrbitForge falls back to manual browser QA proof.',
             safetyDecision: 'blocked',
           },
-        ],
+    ],
   };
+}
+
+function buildAuditPromptPreview(
+  request: GeminiComputerAuditRequest,
+  serverPromptPreview?: unknown,
+): string {
+  const auditFramePreview = [
+    'Audit frame text:',
+    request.screenText.slice(0, 1200),
+  ].join('\n');
+
+  if (typeof serverPromptPreview === 'string' && serverPromptPreview.trim() !== '') {
+    return [
+      auditFramePreview,
+      '',
+      'Runtime prompt preview:',
+      serverPromptPreview,
+    ].join('\n');
+  }
+
+  return auditFramePreview;
 }
