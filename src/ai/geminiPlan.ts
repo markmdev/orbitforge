@@ -12,6 +12,7 @@ export type GeminiPlanTrace = {
   model: string;
   interactionStatus?: string;
   latencyMs?: number;
+  promptPreview?: string;
   outputText?: string;
   plan?: GeminiOperatorPlan;
   error?: string;
@@ -46,6 +47,7 @@ export async function requestGeminiPlan(request: GeminiPlanRequest): Promise<Gem
       model: body.model ?? 'gemini-3.5-flash',
       interactionStatus: body.interactionStatus,
       latencyMs: body.latencyMs,
+      promptPreview: body.promptPreview,
       outputText: body.outputText,
       plan,
     };

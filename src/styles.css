@@ -378,6 +378,24 @@ h3 {
   margin-top: 14px;
 }
 
+.trace-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.trace-preview-grid pre {
+  max-height: 220px;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  color: #c7d5cf;
+  background: rgba(16, 20, 18, 0.55);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .ground-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -431,7 +449,8 @@ h3 {
   .incident-metrics,
   .comparison-row,
   .policy-diff,
-  .score-grid {
+  .score-grid,
+  .trace-preview-grid {
     grid-template-columns: 1fr;
   }
 }

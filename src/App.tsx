@@ -314,6 +314,16 @@ export function App() {
                   <code>policy patch: {geminiPlanTrace.plan.recommendedPolicyPatch}</code>
                 </div>
               )}
+              <div className="trace-preview-grid">
+                <div>
+                  <p className="eyebrow">Prompt/context preview</p>
+                  <pre>{geminiPlanTrace.promptPreview ?? 'No live prompt context captured yet.'}</pre>
+                </div>
+                <div>
+                  <p className="eyebrow">Model output preview</p>
+                  <pre>{geminiPlanTrace.outputText ?? geminiPlanTrace.error ?? 'No model output captured yet.'}</pre>
+                </div>
+              </div>
             </article>
             <div className="trace-list">
               {traceEvents.map((event) => (

@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
             try {
               const body = await readJsonBody(req);
               const startedAt = Date.now();
+              const prompt = buildOperatorPrompt(body);
               const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
                 method: 'POST',
                 headers: {
@@ -38,7 +39,7 @@ export default defineConfig(({ mode }) => {
                 body: JSON.stringify({
                   model: 'gemini-3.5-flash',
                   store: false,
-                  input: buildOperatorPrompt(body),
+                  input: prompt,
                 }),
               });
               const responseJson = (await geminiResponse.json()) as any;
@@ -53,6 +54,7 @@ export default defineConfig(({ mode }) => {
                   model: responseJson.model ?? 'gemini-3.5-flash',
                   interactionStatus: responseJson.status,
                   latencyMs: Date.now() - startedAt,
+                  promptPreview: prompt.slice(0, 1200),
                   outputText,
                   usage: responseJson.usage
                     ? {
