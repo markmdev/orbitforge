@@ -105,8 +105,13 @@ scores so the demo has a crisp before/after proof.
 
 ## Deployment
 
-Local demo is enough for initial development. DigitalOcean deployment is useful
-only if it improves the judge experience:
+Local demo is enough for initial development. The Vite plugin registers Gemini
+API routes for both `vite dev` and `vite preview`, so `npm run build` followed
+by `npm run preview` can serve the built app with `/api/gemini/health`,
+`/api/gemini/plan`, `/api/gemini/critique`, and
+`/api/gemini/computer-audit`.
+
+DigitalOcean deployment is useful only if it improves the judge experience:
 
 - live URL;
 - stable backend for Gemini calls;

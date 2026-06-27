@@ -60,42 +60,10 @@ export default defineConfig(({ mode }) => {
       {
         name: 'orbitforge-gemini-api',
         configureServer(server) {
-          server.middlewares.use('/api/gemini/health', async (req, res) => {
-            if (req.method !== 'GET') {
-              sendJson(res, 405, { ok: false, status: 'blocked', error: 'GET required' });
-              return;
-            }
-
-            sendJson(res, geminiApiKey ? 200 : 503, {
-              ok: Boolean(geminiApiKey),
-              status: geminiApiKey ? 'configured' : 'blocked',
-              model: 'gemini-3.5-flash',
-              cacheEntries: geminiCache.size + computerAuditCache.size,
-              liveCallRequired: false,
-            });
-          });
-
-          server.middlewares.use('/api/gemini/plan', async (req, res) => {
-            await handleGeminiInteraction(req, res, {
-              geminiApiKey,
-              cacheScope: 'plan',
-              buildPrompt: buildOperatorPrompt,
-              responseSchema: operatorPlanSchema,
-            });
-          });
-
-          server.middlewares.use('/api/gemini/critique', async (req, res) => {
-            await handleGeminiInteraction(req, res, {
-              geminiApiKey,
-              cacheScope: 'critique',
-              buildPrompt: buildCritiquePrompt,
-              responseSchema: critiqueSchema,
-            });
-          });
-
-          server.middlewares.use('/api/gemini/computer-audit', async (req, res) => {
-            await handleComputerAudit(req, res, geminiApiKey);
-          });
+          registerGeminiRoutes(server.middlewares, geminiApiKey);
+        },
+        configurePreviewServer(server) {
+          registerGeminiRoutes(server.middlewares, geminiApiKey);
         },
       },
     ],
@@ -105,6 +73,45 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
+
+function registerGeminiRoutes(middlewares: any, geminiApiKey?: string) {
+  middlewares.use('/api/gemini/health', async (req: any, res: any) => {
+    if (req.method !== 'GET') {
+      sendJson(res, 405, { ok: false, status: 'blocked', error: 'GET required' });
+      return;
+    }
+
+    sendJson(res, geminiApiKey ? 200 : 503, {
+      ok: Boolean(geminiApiKey),
+      status: geminiApiKey ? 'configured' : 'blocked',
+      model: 'gemini-3.5-flash',
+      cacheEntries: geminiCache.size + computerAuditCache.size,
+      liveCallRequired: false,
+    });
+  });
+
+  middlewares.use('/api/gemini/plan', async (req: any, res: any) => {
+    await handleGeminiInteraction(req, res, {
+      geminiApiKey,
+      cacheScope: 'plan',
+      buildPrompt: buildOperatorPrompt,
+      responseSchema: operatorPlanSchema,
+    });
+  });
+
+  middlewares.use('/api/gemini/critique', async (req: any, res: any) => {
+    await handleGeminiInteraction(req, res, {
+      geminiApiKey,
+      cacheScope: 'critique',
+      buildPrompt: buildCritiquePrompt,
+      responseSchema: critiqueSchema,
+    });
+  });
+
+  middlewares.use('/api/gemini/computer-audit', async (req: any, res: any) => {
+    await handleComputerAudit(req, res, geminiApiKey);
+  });
+}
 
 async function handleGeminiInteraction(
   req: any,
