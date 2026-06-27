@@ -105,6 +105,35 @@ export type PromotionDecision = {
   reasons: string[];
 };
 
+export type PolicyMutation = {
+  id: string;
+  source: 'deterministic' | 'gemini-live' | 'gemini-fallback';
+  summary: string;
+  targetFailures: string[];
+  diff: string[];
+  candidatePolicy: PolicyVersion;
+  expectedEffect: string;
+};
+
+export type ScenarioEvaluationResult = {
+  scenarioId: string;
+  baselinePlan: AgentPlan;
+  candidatePlan: AgentPlan;
+  baselineScore: EvaluationScore;
+  candidateScore: EvaluationScore;
+  decision: PromotionDecision;
+};
+
+export type ImprovementCycle = {
+  baselinePolicy: PolicyVersion;
+  mutation: PolicyMutation;
+  scenarioResults: ScenarioEvaluationResult[];
+  primaryScenarioId: string;
+  averageDelta: number;
+  promoted: boolean;
+  reasons: string[];
+};
+
 export type TraceEvent = {
   id: string;
   label: string;

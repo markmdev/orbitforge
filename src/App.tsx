@@ -1,8 +1,7 @@
 import { Activity, BrainCircuit, Gauge, GitCompare, Radar, RotateCcw, Satellite, ShieldCheck, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { groundStations, orbitalNodes, policyVersions, scenarios, traceEvents } from './data/demoState';
-import { decidePromotion, evaluatePlan } from './domain/evaluator';
-import { runPolicyOnScenario } from './domain/scenarioRunner';
+import { runImprovementCycle } from './domain/improvement';
 import type { FleetStatus } from './domain/types';
 
 type View = 'console' | 'scenario' | 'evaluation' | 'policy' | 'trace';
@@ -26,12 +25,13 @@ export function App() {
   const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
-  const candidatePolicy = policyVersions[1];
-  const baselinePlan = runPolicyOnScenario(activeScenario, currentPolicy, orbitalNodes, groundStations);
-  const candidatePlan = runPolicyOnScenario(activeScenario, candidatePolicy, orbitalNodes, groundStations);
-  const baselineScore = evaluatePlan(activeScenario, currentPolicy, baselinePlan, orbitalNodes, groundStations);
-  const candidateScore = evaluatePlan(activeScenario, candidatePolicy, candidatePlan, orbitalNodes, groundStations);
-  const promotionDecision = decidePromotion(baselineScore, candidateScore);
+  const improvementCycle = runImprovementCycle(activeScenario, currentPolicy, scenarios, orbitalNodes, groundStations);
+  const candidatePolicy = improvementCycle.mutation.candidatePolicy;
+  const primaryResult =
+    improvementCycle.scenarioResults.find((result) => result.scenarioId === activeScenario.id) ??
+    improvementCycle.scenarioResults[0];
+  const baselineScore = primaryResult.baselineScore;
+  const candidateScore = primaryResult.candidateScore;
   const totalRawGb = useMemo(() => scenarios.reduce((sum, scenario) => sum + scenario.rawGb, 0), []);
   const resetDemo = () => {
     setActiveScenarioId(scenarios[0].id);
@@ -132,7 +132,8 @@ export function App() {
                 <Metric label={candidatePolicy.name} value={String(candidateScore.total)} />
               </div>
               <div className="delta-banner">
-                {promotionDecision.delta > 0 ? '+' : ''}{promotionDecision.delta} points after thermal/contact policy mutation
+                {primaryResult.decision.delta > 0 ? '+' : ''}{primaryResult.decision.delta} points on active incident;
+                {' '}{improvementCycle.averageDelta > 0 ? '+' : ''}{improvementCycle.averageDelta} average across golden scenarios
               </div>
             </section>
 
@@ -223,7 +224,29 @@ export function App() {
               </div>
             </div>
             <div className="delta-banner">
-              {promotionDecision.promoted ? 'Promotion accepted' : 'Promotion held'}: {promotionDecision.reasons[0]}
+              {improvementCycle.promoted ? 'Promotion accepted' : 'Promotion held'}: {improvementCycle.reasons[0]}
+            </div>
+            <div className="diff-list">
+              {improvementCycle.mutation.diff.map((line) => (
+                <code key={line}>{line}</code>
+              ))}
+            </div>
+            <div className="scenario-table compact-table">
+              {improvementCycle.scenarioResults.map((result) => {
+                const scenario = scenarios.find((item) => item.id === result.scenarioId);
+
+                return (
+                  <article className="score-sweep-row" key={result.scenarioId}>
+                    <div>
+                      <strong>{scenario?.name ?? result.scenarioId}</strong>
+                      <span>{result.decision.reasons[0]}</span>
+                    </div>
+                    <Metric label="Baseline" value={String(result.baselineScore.total)} />
+                    <Metric label="Candidate" value={String(result.candidateScore.total)} />
+                    <Metric label="Delta" value={`${result.decision.delta > 0 ? '+' : ''}${result.decision.delta}`} />
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}

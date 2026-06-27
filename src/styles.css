@@ -267,6 +267,7 @@ h3 {
 .node-row,
 .trace-row,
 .scenario-row,
+.score-sweep-row,
 .trace-card,
 .ground-strip article {
   display: flex;
@@ -293,6 +294,7 @@ h3 {
 
 .node-row div,
 .scenario-row div,
+.score-sweep-row div,
 .trace-card div,
 .ground-strip article {
   display: grid;
@@ -342,6 +344,25 @@ h3 {
   display: grid;
   align-content: start;
   gap: 8px;
+}
+
+.diff-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.diff-list code {
+  display: block;
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--line);
+  color: #c7eadf;
+  background: rgba(16, 20, 18, 0.48);
+}
+
+.compact-table {
+  margin-top: 14px;
 }
 
 .ground-strip {
