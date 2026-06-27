@@ -21,6 +21,13 @@ export type JudgeReportInput = {
   runtimeHealthStatus?: string;
   runtimeHealthError?: string;
   runtimeHealthCacheEntries?: number;
+  missionStatus?: 'not_run' | 'met' | 'late';
+  missionProductName?: string;
+  missionFreshnessMinutes?: number;
+  missionNodeName?: string;
+  missionStationName?: string;
+  missionPlacement?: string;
+  missionReadinessBonusMinutes?: number;
 };
 
 export function buildJudgeReport(input: JudgeReportInput): string {
@@ -44,6 +51,7 @@ export function buildJudgeReport(input: JudgeReportInput): string {
     `Candidate score: ${formatOptionalScore(input.candidateScore)}`,
     `Incident readiness: ${formatIncidentReadiness(input.incidentReadinessScore, input.incidentReadinessLabel)}`,
     `Commands applied: ${formatCommandLabels(input.appliedCommandLabels)}`,
+    `Mission execution: ${formatMissionExecution(input)}`,
     `Average sweep delta: ${signedDelta(input.averageDelta)}`,
     `Promotion gate: ${input.promoted ? 'accepted' : 'held'}`,
     '',
@@ -98,4 +106,23 @@ function formatRuntimeHealth(status?: string, error?: string, cacheEntries?: num
   const cacheSuffix = typeof cacheEntries === 'number' ? `; cache entries ${cacheEntries}` : '';
 
   return error ? `${status ?? 'blocked'} (${error})${cacheSuffix}` : `${status ?? 'unknown'}${cacheSuffix}`;
+}
+
+function formatMissionExecution(input: JudgeReportInput): string {
+  if (!input.missionStatus || input.missionStatus === 'not_run') {
+    return 'not run';
+  }
+
+  const freshness = typeof input.missionFreshnessMinutes === 'number' ? `T+${input.missionFreshnessMinutes}m` : 'freshness unknown';
+  const bonus =
+    typeof input.missionReadinessBonusMinutes === 'number'
+      ? `; readiness bonus ${input.missionReadinessBonusMinutes}m`
+      : '';
+  const path =
+    input.missionNodeName && input.missionStationName
+      ? ` via ${input.missionNodeName} -> ${input.missionStationName}`
+      : '';
+  const placement = input.missionPlacement ? ` (${input.missionPlacement})` : '';
+
+  return `${input.missionProductName ?? 'seeded data product'} ${input.missionStatus} at ${freshness}${path}${placement}${bonus}`;
 }

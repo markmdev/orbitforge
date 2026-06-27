@@ -1,10 +1,12 @@
 import {
   Activity,
   BrainCircuit,
+  Clock3,
   Copy,
   Gauge,
   GitCompare,
   MousePointerClick,
+  Play,
   Radar,
   RefreshCw,
   RotateCcw,
@@ -27,6 +29,7 @@ import { decidePromotion, evaluatePlan } from './domain/evaluator';
 import { applyIncidentCommand, getIncidentCommands, summarizeIncidentCommands } from './domain/incidentActions';
 import { runImprovementCycle } from './domain/improvement';
 import { buildJudgeReport, formatAuditMode, formatPromptGuard } from './domain/judgeReport';
+import { buildMissionExecution, type MissionExecution } from './domain/missionExecution';
 import { createStressDrill } from './domain/scenarioDrill';
 import { runPolicyOnScenario } from './domain/scenarioRunner';
 import type { FleetStatus, ScoreDimension, TraceEvent } from './domain/types';
@@ -120,6 +123,7 @@ export function App() {
   const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
   const [judgeReport, setJudgeReport] = useState('');
   const [geminiRunId, setGeminiRunId] = useState(0);
+  const [missionExecution, setMissionExecution] = useState<MissionExecution | null>(null);
   const critiqueRequestIdRef = useRef(0);
   const activeScenario = scenarioLibrary.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const improvementCycle = useMemo(
@@ -190,6 +194,12 @@ export function App() {
         complete: candidateAlreadyActive,
       },
       {
+        id: 'run-mission',
+        label: 'Run mission plan',
+        detail: 'Execute the active policy into a seeded timeline and data-product handoff.',
+        complete: missionExecution !== null,
+      },
+      {
         id: 'audit-ui',
         label: 'Run computer-use audit',
         detail: 'Generate audit frame and request Gemini proposed QA actions or exact blocker.',
@@ -209,6 +219,7 @@ export function App() {
       improvementStaged,
       incidentCommandSummary.stabilized,
       judgeReport.length,
+      missionExecution,
     ],
   );
   const completedWorkItems = workQueue.filter((item) => item.complete).length;
@@ -275,6 +286,7 @@ export function App() {
     setActivePolicy(baselinePolicy);
     setStagedImprovementKey(null);
     setPromotedImprovementKey(null);
+    setMissionExecution(null);
     critiqueRequestIdRef.current += 1;
     setAppliedCommandIds([]);
     setOperatorLog([
@@ -304,6 +316,7 @@ export function App() {
 
     setActivePolicy(candidatePolicy);
     setPromotedImprovementKey(improvementKey);
+    setMissionExecution(null);
     setOperatorLog((entries) => [
       {
         id: `log-promote-${Date.now()}`,
@@ -323,6 +336,7 @@ export function App() {
     }
 
     setAppliedCommandIds((ids) => applyIncidentCommand(activeScenario, ids, commandId));
+    setMissionExecution(null);
     setOperatorLog((entries) => [
       {
         id: `log-command-${commandId}-${Date.now()}`,
@@ -339,6 +353,7 @@ export function App() {
     setStagedImprovementKey(improvementKey);
     setPromotedImprovementKey(null);
     setActivePolicy(baselinePolicy);
+    setMissionExecution(null);
     setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     setOperatorLog((entries) => [
       {
@@ -378,6 +393,7 @@ export function App() {
     setActivePolicy(baselinePolicy);
     setStagedImprovementKey(null);
     setPromotedImprovementKey(null);
+    setMissionExecution(null);
     critiqueRequestIdRef.current += 1;
     setAppliedCommandIds([]);
     setComputerAuditTrace({
@@ -424,6 +440,13 @@ export function App() {
       runtimeHealthStatus: geminiHealthTrace.status,
       runtimeHealthError: geminiHealthTrace.error,
       runtimeHealthCacheEntries: geminiHealthTrace.cacheEntries,
+      missionStatus: missionExecution ? missionExecution.freshnessStatus : 'not_run',
+      missionProductName: missionExecution?.dataProductName,
+      missionFreshnessMinutes: missionExecution?.deliveredFreshnessMinutes,
+      missionNodeName: missionExecution?.nodeName,
+      missionStationName: missionExecution?.stationName,
+      missionPlacement: missionExecution?.placement,
+      missionReadinessBonusMinutes: missionExecution?.readinessBonusMinutes,
     });
     setJudgeReport(report);
 
@@ -450,6 +473,7 @@ export function App() {
         policy: activePolicy,
         improvementCycle,
         improvementStaged,
+        missionExecution,
         planTrace: geminiPlanTrace,
         critiqueTrace: geminiCritiqueTrace,
       });
@@ -475,6 +499,27 @@ export function App() {
         ],
       });
     }
+  };
+  const runMissionPlan = () => {
+    const execution = buildMissionExecution(
+      activeScenario,
+      activePolicy,
+      orbitalNodes,
+      groundStations,
+      incidentCommandSummary.readinessScore,
+    );
+
+    setMissionExecution(execution);
+    setOperatorLog((entries) => [
+      {
+        id: `log-execution-${activeScenario.id}-${Date.now()}`,
+        source: 'operator',
+        label: 'Mission plan run',
+        detail: `${execution.dataProductName} ${execution.freshnessStatus === 'met' ? 'ready' : 'late'} at T+${execution.deliveredFreshnessMinutes}m via ${execution.nodeName} and ${execution.stationName}.`,
+      },
+      ...entries,
+    ]);
+    setActiveView('console');
   };
 
   useEffect(() => {
@@ -682,6 +727,57 @@ export function App() {
               </div>
             </section>
 
+            <section className="panel mission-execution-panel">
+              <div className="panel-title">
+                <Clock3 size={18} />
+                Mission execution timeline
+              </div>
+              <div className="execution-summary">
+                <Metric label="Data product" value={missionExecution ? `${missionExecution.targetGb} GB` : 'Not run'} />
+                <Metric
+                  label="Freshness"
+                  value={
+                    missionExecution
+                      ? `T+${missionExecution.deliveredFreshnessMinutes}m ${missionExecution.freshnessStatus}`
+                      : '--'
+                  }
+                />
+                <Metric
+                  label="Path"
+                  value={missionExecution ? `${missionExecution.nodeName} -> ${missionExecution.stationName}` : 'Awaiting run'}
+                />
+              </div>
+              <div className="workflow-actions">
+                <button className="reset-button primary-action" type="button" onClick={runMissionPlan}>
+                  <Play size={16} />
+                  {missionExecution ? 'Rerun mission plan' : 'Run mission plan'}
+                </button>
+                <span className={missionExecution?.freshnessStatus === 'met' ? 'report-status copied' : 'report-status'}>
+                  {missionExecution
+                    ? `${missionExecution.dataProductName} ${missionExecution.freshnessStatus}`
+                    : 'No mission execution yet'}
+                </span>
+              </div>
+              {missionExecution ? (
+                <div className="timeline-list">
+                  {missionExecution.steps.map((step) => (
+                    <article className="timeline-step" key={step.id}>
+                      <span className="timeline-minute">T+{step.minute}m</span>
+                      <div>
+                        <strong>{step.label}</strong>
+                        <span>{step.detail}</span>
+                      </div>
+                      <strong className={`event-status ${step.status}`}>{step.status}</strong>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="delta-banner">
+                  Run the active policy to produce a seeded timeline, data product, freshness result, and report evidence.
+                </div>
+              )}
+            </section>
+
             <section className="panel work-queue-panel">
               <div className="panel-title">
                 <ShieldCheck size={18} />
@@ -775,6 +871,7 @@ export function App() {
                     setActivePolicy(baselinePolicy);
                     setStagedImprovementKey(null);
                     setPromotedImprovementKey(null);
+                    setMissionExecution(null);
                     critiqueRequestIdRef.current += 1;
                     setAppliedCommandIds([]);
                     setComputerAuditTrace({

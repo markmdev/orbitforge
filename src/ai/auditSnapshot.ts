@@ -1,4 +1,5 @@
 import type { GeminiCritiqueTrace, GeminiPlanTrace } from './geminiPlan';
+import type { MissionExecution } from '../domain/missionExecution';
 import type { ImprovementCycle, PolicyVersion, Scenario } from '../domain/types';
 
 export type AuditSnapshotInput = {
@@ -7,6 +8,7 @@ export type AuditSnapshotInput = {
   policy: PolicyVersion;
   improvementCycle: ImprovementCycle;
   improvementStaged: boolean;
+  missionExecution?: MissionExecution | null;
   planTrace: GeminiPlanTrace;
   critiqueTrace: GeminiCritiqueTrace;
 };
@@ -60,6 +62,7 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Scenario: ${input.scenario.name}`,
     `Incident: ${input.scenario.incident}`,
     `Policy: ${input.policy.name}`,
+    `Mission execution: ${formatMissionExecution(input.missionExecution)}`,
     `Baseline score: ${primaryResult.baselineScore.total}`,
     `Candidate score: ${input.improvementStaged ? primaryResult.candidateScore.total : 'not staged'}`,
     `Active delta: ${input.improvementStaged ? primaryResult.decision.delta : '--'}`,
@@ -72,6 +75,14 @@ function buildScreenText(input: AuditSnapshotInput): string[] {
     `Critique fallback/error: ${input.critiqueTrace.error ?? 'none'}`,
     'Expected audit: identify the next UI click or inspection a judge/demo QA agent should perform.',
   ];
+}
+
+function formatMissionExecution(execution?: MissionExecution | null): string {
+  if (!execution) {
+    return 'not run';
+  }
+
+  return `${execution.dataProductName} ${execution.freshnessStatus} at T+${execution.deliveredFreshnessMinutes}m via ${execution.nodeName} and ${execution.stationName}`;
 }
 
 function drawAuditFrame(

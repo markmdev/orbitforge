@@ -15,7 +15,8 @@ Last updated: 2026-06-27
 | Evaluation | Score plan | Deterministic scorecard appears with dimensions and guardrail canary rejection |
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, learning-memory write, and promotion gate appear |
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion without leaking across scenarios |
-| Work queue | Complete demo actions | Readiness moves from `1/6` to `6/6` as commands, improvement, promotion, audit run, and report export complete |
+| Mission execution | Run mission plan | Timeline steps, selected node/station, data product, freshness result, and operations log appear |
+| Work queue | Complete demo actions | Readiness moves from `1/7` to `7/7` as commands, improvement, promotion, mission execution, audit run, and report export complete |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
 | Runtime health | Open Console | Gemini runtime health strip shows configured/blocked state from `/api/gemini/health` |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
@@ -48,7 +49,7 @@ Current browser proof surfaces:
   `Promote candidate` run.
 - Scenario reset proof: after promoting the wildfire candidate, selecting
   `Radiation Spike During Inference` resets active policy to `v0
-  deadline-first`, active score to `81`, work queue to `1/6`, and improvement
+  deadline-first`, active score to `81`, work queue to `1/7`, and improvement
   proof to `Run pass`.
 - Scenario-aware fallback proof: when Gemini quota blocks the radiation plan,
   the visible fallback explains a validation-first radiation path and does not
@@ -64,18 +65,22 @@ Current browser proof surfaces:
   `v1 generated thermal-contact candidate`, updates active policy score from
   `70` to `85`, records `Improvement pass run` and `Candidate promoted` in the
   operations log, and `Reset demo` restores baseline state.
-- Incident work queue: starts at `1/6`, moves to `2/6` after incident
-  stabilization, `3/6` after improvement pass, `4/6` after promotion, `5/6`
-  after audit fallback/live result, `6/6` after report export, and resets to
-  `1/6`.
+- Mission execution: Console `Run mission plan` creates a four-step timeline,
+  selects `Kepler-2 -> New Mexico RF/Optical Hybrid`, delivers `Fireline SAR
+  tiles` at `T+14m met`, records `Mission plan run`, and exports mission state
+  in the judge report.
+- Incident work queue: starts at `1/7`, moves to `2/7` after incident
+  stabilization, `3/7` after improvement pass, `4/7` after promotion, `5/7`
+  after mission execution, `6/7` after audit fallback/live result, `7/7` after
+  report export, and resets to `1/7`.
 - Mobile command/queue proof: at `390x844`, command buttons and queue rows fit
   within `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Mobile runtime-health proof: at `390x844`, health strip fits within
   `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Computer-use audit: Trace and judge report surface propose-only mode,
   prompt-injection guard state, exact quota blocker when quota blocks live
-  output, and the audit-frame state including `Candidate score: 85` plus
-  `Promotion gate: accepted` after promotion.
+  output, and the audit-frame state including `Candidate score: 85`, mission
+  execution state, plus `Promotion gate: accepted` after promotion.
 - Browser console warnings/errors were empty in the final browser QA pass.
 
 ## Product Depth QA

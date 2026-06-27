@@ -16,16 +16,16 @@ The app is a runnable orbital-compute mission console. It shows:
 - deterministic scorecards, policy mutation, A/B sweep, learning-memory
   writeback, explicit operator-run improvement pass, scenario-scoped promotion
   gate, scenario-aware incident command deck, stateful operator promotion,
-  incident work queue, operations log, and a visible unsafe-policy guardrail
-  canary;
+  seeded mission execution timeline, incident work queue, operations log, and a
+  visible unsafe-policy guardrail canary;
 - seeded stress-drill generation that appends a new what-if scenario to the
   current evaluation library and gives it a command deck;
 - Gemini 3.5 Flash computer-use audit path with a generated audit frame,
   propose-only actions, prompt-injection guard state, and exact quota/API
   blocker display;
 - judge report export with active policy state, current scores, incident
-  readiness, applied commands, Gemini runtime health, Gemini status, audit
-  mode, prompt guard, and seeded-data guardrail.
+  readiness, applied commands, mission execution state, Gemini runtime health,
+  Gemini status, audit mode, prompt guard, and seeded-data guardrail.
 
 Known live state: Gemini API quota is currently returning
 `You do not have enough quota to make this request.` The app preserves the exact

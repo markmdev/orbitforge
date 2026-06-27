@@ -26,9 +26,10 @@ repeated simulated incidents.
    patch.
 12. Click `Promote candidate` and show the active policy and operations log
     change.
-13. Show the incident work queue moving from open tasks toward readiness.
-14. Show the guardrail canary rejecting an unsafe overclaiming mutation.
-15. Show Gemini computer-use audit result, including propose-only mode and
+13. Click `Run mission plan` and show the timeline/data product handoff.
+14. Show the incident work queue moving from open tasks toward readiness.
+15. Show the guardrail canary rejecting an unsafe overclaiming mutation.
+16. Show Gemini computer-use audit result, including propose-only mode and
     prompt-injection guard state.
 
 Closing line:
@@ -109,9 +110,13 @@ Click `Promote candidate`, then show the Console:
 - active policy changes to `v1 generated thermal-contact candidate`;
 - active score changes from `70` to `85`;
 - operations log records `Candidate promoted`.
-- incident work queue moves from `1/6` to `2/6` after command stabilization,
-  then to `3/6` after improvement pass, `4/6` after promotion, `5/6` after
-  audit result, and `6/6` after report export.
+- click `Run mission plan`;
+- timeline shows `Fireline SAR tiles`, `Kepler-2 -> New Mexico RF/Optical
+  Hybrid`, and freshness `T+14m met`;
+- operations log records `Mission plan run`;
+- incident work queue moves from `1/7` to `2/7` after command stabilization,
+  then to `3/7` after improvement pass, `4/7` after promotion, `5/7` after
+  mission execution, `6/7` after audit result, and `7/7` after report export.
 
 Show diff, score delta, and the fact that `Reset demo` restores the baseline.
 
@@ -166,15 +171,17 @@ Before handing the app to judges:
    state.
 8. Click `Promote candidate`, confirm Console shows active policy score `85`,
    and confirm operations log includes `Candidate promoted`.
-9. Confirm incident work queue reaches `6/6` after audit result and report
-   export.
-10. Click `Reset demo`, confirm active policy score returns to `70` and work
-   queue returns to `1/6`.
-11. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
+9. Click `Run mission plan` and confirm `Fireline SAR tiles` is `met` at
+   `T+14m`.
+10. Confirm incident work queue reaches `7/7` after mission execution, audit
+   result, and report export.
+11. Click `Reset demo`, confirm active policy score returns to `70` and work
+   queue returns to `1/7`.
+12. Confirm Evaluation shows `Guardrail canary held` and the unsafe canary is
    blocked.
-12. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
+13. Confirm Gemini Trace shows plan, critique, computer-use audit, and an honest
    live/fallback status for each Gemini surface.
-13. Confirm the audit surface or judge report shows `propose-only` mode and
+14. Confirm the audit surface or judge report shows `propose-only` mode and
    `Prompt-injection guard: enabled` after running audit.
 
 Latest rehearsal proof:
@@ -202,18 +209,22 @@ Latest rehearsal proof:
   operations log, and `Promote candidate` changed active policy to
   `v1 generated thermal-contact candidate`, updated active score from `70` to
   `85`, and wrote `Candidate promoted` to the operations log.
-- Incident work queue moved from `1/6` to `6/6` as command stabilization,
-  improvement pass, promotion, audit result, and report export completed; reset
-  restored it to `1/6`.
+- Console `Run mission plan` produced `Fireline SAR tiles`, `Kepler-2 -> New
+  Mexico RF/Optical Hybrid`, freshness `T+14m met`, a four-step timeline, and a
+  `Mission plan run` log entry.
+- Incident work queue moved from `1/7` to `7/7` as command stabilization,
+  improvement pass, promotion, mission execution, audit result, and report
+  export completed; reset restored it to `1/7`.
 - Gemini Trace retry showed the exact quota blocker, and Run audit showed
   fallback state with `Modepropose-only`, `Prompt guardenabled`, audit-frame
   `Candidate score: 85`, and `Promotion gate: accepted`.
 - After promotion, selecting `Radiation Spike During Inference` reset active
-  policy to baseline, active score to `81`, work queue to `1/6`, and the
+  policy to baseline, active score to `81`, work queue to `1/7`, and the
   fallback plan switched to radiation validation copy instead of wildfire copy.
 - Copy report included `Computer-use mode: propose-only`,
   `Prompt-injection guard: enabled`, active policy state, incident readiness,
-  applied commands, runtime health, and seeded telemetry guardrail.
+  applied commands, mission execution state, runtime health, and seeded
+  telemetry guardrail.
 - Console runtime health strip showed `configured` and trace cache count from
   `/api/gemini/health`; judge report included
   `Runtime health: configured; cache entries 12`.

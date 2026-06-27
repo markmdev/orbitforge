@@ -27,6 +27,8 @@ fleet:
 - scenario-aware incident command deck that changes seeded readiness state.
 - seeded stress-drill generator that appends a what-if scenario to the current
   scenario library.
+- seeded mission execution timeline that turns the active policy into node,
+  station, freshness, and data-product handoff evidence.
 
 ### R2 - Scenario Runner
 
@@ -83,7 +85,7 @@ The system must show improvement over time:
   state;
 - record promotion/reset actions in an activity log;
 - track incident readiness from real app actions such as command application,
-  promotion, audit result, and report export;
+  promotion, mission execution, audit result, and report export;
 - show before/after diff and score delta in the UI.
 
 ### R6 - Gemini In-App Runtime Integration
@@ -122,7 +124,7 @@ The demo must be immediately legible:
 - no landing page as the first screen;
 - first screen is the live console;
 - clear progress loop: scenario -> agent plan -> evaluation -> mutation ->
-  before/after improvement -> operator promotion;
+  before/after improvement -> operator promotion -> mission execution;
 - visually polished and technically dense;
 - seeded data labeled honestly.
 
@@ -155,7 +157,9 @@ The MVP is ready when a judge can watch one complete loop:
 7. run a Gemini-powered improvement pass;
 8. compare old/new policy results;
 9. see a promoted policy version with score improvement and trace evidence;
-10. see Gemini computer-use audit evidence or a clearly marked unavailable
+10. run a seeded mission execution timeline and see data-product handoff
+    evidence;
+11. see Gemini computer-use audit evidence or a clearly marked unavailable
    integration fallback panel if API access fails during the hackathon.
 
 Current accepted fallback: if Gemini quota blocks a live call, the panel must

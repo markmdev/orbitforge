@@ -221,7 +221,8 @@ h3 {
 .incident-metrics,
 .comparison-row,
 .score-grid,
-.policy-diff {
+.policy-diff,
+.execution-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
@@ -279,6 +280,7 @@ h3 {
 .metric strong {
   color: var(--text);
   font-size: 1.2rem;
+  overflow-wrap: anywhere;
 }
 
 .risk-note,
@@ -410,7 +412,8 @@ h3 {
 .trace-list,
 .scenario-table,
 .activity-list,
-.work-queue-list {
+.work-queue-list,
+.timeline-list {
   display: grid;
   gap: 10px;
 }
@@ -422,6 +425,7 @@ h3 {
 .trace-card,
 .activity-row,
 .work-item,
+.timeline-step,
 .ground-strip article {
   display: flex;
   justify-content: space-between;
@@ -457,9 +461,30 @@ h3 {
 }
 
 .activity-row span:not(.source-pill),
-.work-item span {
+.work-item span,
+.timeline-step span {
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+.timeline-list {
+  margin-top: 14px;
+}
+
+.timeline-step {
+  align-items: flex-start;
+}
+
+.timeline-step div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.timeline-minute {
+  min-width: 52px;
+  color: var(--steel);
+  font-weight: 800;
 }
 
 .status-pill.nominal {
@@ -846,6 +871,7 @@ h3 {
   .trace-row,
   .activity-row,
   .work-item,
+  .timeline-step,
   .scenario-row,
   .score-sweep-row,
   .ground-strip article,
@@ -879,6 +905,7 @@ h3 {
   .score-grid,
   .command-summary,
   .queue-summary,
+  .execution-summary,
   .runtime-health-strip,
   .trace-preview-grid {
     grid-template-columns: 1fr;
