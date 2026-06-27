@@ -6,6 +6,7 @@ import {
   GitCompare,
   MousePointerClick,
   Radar,
+  RefreshCw,
   RotateCcw,
   Satellite,
   ShieldCheck,
@@ -67,6 +68,7 @@ export function App() {
   });
   const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
   const [judgeReport, setJudgeReport] = useState('');
+  const [geminiRunId, setGeminiRunId] = useState(0);
   const activeScenario = scenarios.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const currentPolicy = policyVersions[0];
   const improvementCycle = useMemo(
@@ -217,7 +219,7 @@ export function App() {
     return () => {
       isCurrent = false;
     };
-  }, [activeScenario.id]);
+  }, [activeScenario.id, geminiRunId]);
 
   return (
     <main className="app-shell">
@@ -497,6 +499,17 @@ export function App() {
             <div className="panel-title">
               <Sparkles size={18} />
               Inspectable Gemini and eval trace
+            </div>
+            <div className="trace-toolbar">
+              <button
+                className="reset-button"
+                type="button"
+                onClick={() => setGeminiRunId((value) => value + 1)}
+                disabled={geminiPlanTrace.status === 'loading' || geminiCritiqueTrace.status === 'loading'}
+              >
+                <RefreshCw size={16} />
+                Retry Gemini
+              </button>
             </div>
             <article className="gemini-output">
               <div>

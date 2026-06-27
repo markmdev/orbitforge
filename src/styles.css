@@ -521,6 +521,12 @@ h3 {
   gap: 8px;
 }
 
+.trace-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 12px;
+}
+
 .policy-diff > div {
   min-height: 150px;
   padding: 16px;
