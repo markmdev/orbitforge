@@ -16,10 +16,10 @@ repeated simulated incidents.
 3. Trigger `Wildfire SAR Rapid Response`.
 4. Show Gemini's initial operational plan.
 5. Show the deterministic evaluator catching a weakness.
-6. Run the improvement pass.
-7. Show Gemini's critique and app-generated policy mutation.
+6. Show the improvement pass.
+7. Show Gemini's critique and the app-generated policy mutation.
 8. Show A/B score improvement and policy diff.
-9. Show the promoted policy version.
+9. Show the deterministic promotion gate and score delta.
 10. Show Gemini computer-use audit result.
 
 Closing line:
@@ -77,10 +77,10 @@ Show diff and score delta.
 
 Show Gemini computer-use audit:
 
-- screenshot inspected;
-- interaction path attempted;
-- top UI/ops issues;
-- prize-relevant trace.
+- local audit-frame screenshot generated from current seeded app state;
+- Gemini 3.5 Flash computer-use tool path attempted;
+- proposed UI action or exact API/quota blocker shown;
+- result tied to judge-readiness QA.
 
 ### 2:40 - 3:00: Close
 
@@ -95,3 +95,10 @@ If API access fails during the live demo:
 - show the exact blocker in the Gemini Trace panel;
 - show where the real API call would attach;
 - do not claim the blocked integration ran live.
+
+If quota is the blocker, say:
+
+> The system is still doing the right product behavior: it preserves the prompt,
+> output, model, status, and exact quota error, then falls back to deterministic
+> evaluation so the operator can keep working. We can rerun the same buttons
+> when quota clears.

@@ -14,10 +14,21 @@ Last updated: 2026-06-27
 | Improvement | Run improvement pass | Candidate policy, diff, A/B result, and promotion gate appear |
 | Promotion | Promote candidate | Version changes and score trend updates |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
-| Audit | Run computer-use audit | Result is visible or blocker is explicit |
+| Audit | Run computer-use audit | Audit frame is generated; action proposals or exact blocker are visible |
 | Honesty | Inspect copy | Seeded/simulated labels are visible |
 | Safety | Inspect controls | No real launch/command/uplink claims |
 | Responsiveness | Resize desktop/mobile | No text overlap or broken layout |
+
+Current browser proof surfaces:
+
+- In-app browser, desktop `1440x900`: Console shows active incident, fleet
+  health, improvement proof, Gemini trace status, and ground contact strip
+  without overlap.
+- In-app browser, mobile `390x844`: Console and active incident are visible in
+  the first viewport; mobile nav is compact.
+- Gemini Trace: plan, critique, and computer-use audit panels preserve
+  prompt/output previews and label live/fallback state.
+- Browser console warnings/errors should be empty after each QA pass.
 
 ## Product Depth QA
 
@@ -38,6 +49,13 @@ Last updated: 2026-06-27
 | Managed agent unavailable | Improvement lab shows blocker and local mutation fallback |
 | Computer use unavailable | Audit panel shows exact blocker and manual QA fallback |
 | Rate limit | App preserves state and lets user retry |
+
+Known current blocker:
+
+- Gemini can return `You do not have enough quota to make this request.` During
+  that state, plan/critique/audit panels must show fallback status and exact
+  blocker text. This is acceptable for development proof but should be rerun
+  before final demo if quota clears.
 
 ## Evals QA
 
@@ -76,3 +94,13 @@ Last updated: 2026-06-27
 - `source-ready`: app builds and evaluator tests pass but live demo not proven.
 - `blocked`: requires Mark/account/API/payment.
 - `not-ready`: core loop or UI proof missing.
+
+## Command Proof Handles
+
+- `npm test`: deterministic domain and Gemini contract tests.
+- `npm run build`: TypeScript/Vite production build.
+- `npm run verify:runtime`: app shell plus Gemini configured-state health,
+  without consuming a live model call.
+- `npm run verify:gemini`: intentional live Gemini proof when quota allows.
+- In-app browser: real click QA for Scenario Lab, Reset, Evaluation, Policy
+  Lab, Gemini Trace, and Run audit.

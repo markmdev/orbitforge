@@ -48,8 +48,9 @@ labeled as dataset generation rather than weight updates.
 
 Required prize surfaces to target:
 
-- Gemini API surfaces inside the app for planning, critique, mutation, and
-  traceable improvement work;
+- Gemini API surfaces inside the app for planning, critique, and traceable
+  improvement work;
+- structured Gemini JSON contracts that the app parses before display;
 - Gemini 3.5 Flash computer use for UI and workflow audit.
 
 Optional:
@@ -84,3 +85,19 @@ Bad:
 7. Promote the better policy.
 8. Run Gemini computer-use audit on the UI.
 9. End on the score trend and trace evidence.
+
+## Current Demo Proof
+
+- Operator plan: `/api/gemini/plan` calls Gemini from the app runtime and shows
+  placement, rationale, constraints, risks, confidence, prompt preview, and
+  output preview.
+- Improvement critique: `/api/gemini/critique` calls Gemini from the app
+  runtime and shows failure analysis, proposed next experiment, expected metric
+  move, guardrail concerns, and judge narrative.
+- Computer-use audit: `/api/gemini/computer-audit` sends a generated local PNG
+  audit frame with the `computer_use` browser tool configured. Returned actions
+  are displayed, not executed.
+- Deterministic evaluator: app-owned scoring and promotion remain the source of
+  truth, so Gemini cannot grade itself into success.
+- Current blocker story: quota can block live Gemini calls; the app surfaces the
+  exact blocker and keeps the seeded deterministic loop usable.

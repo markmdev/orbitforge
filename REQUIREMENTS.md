@@ -75,10 +75,10 @@ The system must show improvement over time:
 The implementation should use Gemini through normal app modules for at least one
 visible self-improvement function:
 
-- generating new scenario variants;
-- writing or mutating policy text;
-- explaining evaluation failures and possible fixes;
-- producing a versioned improvement report.
+- proposing an operational plan from seeded scenario/policy context;
+- critiquing deterministic evaluation failures;
+- proposing the next policy experiment;
+- producing a traceable improvement report.
 
 All prompts, schemas, traces, and eval results should live in app-owned source
 and data paths. If managed-agent or Interactions API surfaces are available,
@@ -90,10 +90,11 @@ default architecture. Gemini Antigravity is an IDE and is not required.
 The implementation should use Gemini 3.5 Flash computer use for a visible UI or
 operator workflow audit:
 
-- inspect the running dashboard via screenshot;
-- click through a scenario or evaluation screen;
+- inspect a screenshot or generated audit frame of the running dashboard;
+- propose the next UI action or inspection a judge-readiness agent should take;
 - produce critique and suggested UI/ops improvements;
-- log the actions and findings in the app.
+- log the action proposals and findings in the app;
+- never execute returned actions without a separate explicit execution surface.
 
 ### R8 - Hackathon Polish
 
@@ -134,4 +135,8 @@ The MVP is ready when a judge can watch one complete loop:
 6. compare old/new policy results;
 7. see a promoted policy version with score improvement and trace evidence;
 8. see Gemini computer-use audit evidence or a clearly marked unavailable
-   integration placeholder if API access fails during the hackathon.
+   integration fallback panel if API access fails during the hackathon.
+
+Current accepted fallback: if Gemini quota blocks a live call, the panel must
+show the exact quota/API blocker, preserve prompt/output previews when
+available, and keep the deterministic demo usable.
