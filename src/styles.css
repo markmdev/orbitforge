@@ -489,6 +489,27 @@ h3 {
     padding: 16px;
   }
 
+  .sidebar {
+    gap: 16px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  h1 {
+    font-size: 1.18rem;
+  }
+
+  h2 {
+    font-size: 1.55rem;
+  }
+
+  h3 {
+    font-size: 1.45rem;
+  }
+
   .topbar,
   .audit-header,
   .node-row,
@@ -498,7 +519,24 @@ h3 {
     flex-direction: column;
   }
 
-  .nav-list,
+  .nav-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nav-item {
+    min-height: 38px;
+    padding: 0 10px;
+    text-align: center;
+  }
+
+  .mission-card {
+    display: none;
+  }
+
+  .hero-panel {
+    min-height: auto;
+  }
+
   .incident-metrics,
   .comparison-row,
   .policy-diff,
