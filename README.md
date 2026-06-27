@@ -13,8 +13,8 @@ The app is a runnable orbital-compute mission console. It shows:
   constraints;
 - Gemini 3.5 operator plan and improvement critique traces through app runtime
   API routes;
-- deterministic scorecards, policy mutation, A/B sweep, promotion gate, and a
-  visible unsafe-policy guardrail canary;
+- deterministic scorecards, policy mutation, A/B sweep, learning-memory
+  writeback, promotion gate, and a visible unsafe-policy guardrail canary;
 - Gemini 3.5 Flash computer-use audit path with a generated audit frame,
   propose-only actions, prompt-injection guard state, and exact quota/API
   blocker display;
