@@ -19,6 +19,16 @@ Last updated: 2026-06-27
 | Safety | Inspect controls | No real launch/command/uplink claims |
 | Responsiveness | Resize desktop/mobile | No text overlap or broken layout |
 
+## Product Depth QA
+
+| Area | Check | Pass condition |
+|---|---|---|
+| Product bar | Review against `QUALITY_BAR.md` | No core path feels like a toy, placeholder, or wrapper |
+| Domain depth | Inspect scenario/entity data | Constraints feel orbital-compute-specific, not generic sci-fi |
+| AI depth | Inspect Gemini Trace and eval flow | Gemini contribution is visible, structured, and bounded by deterministic proof |
+| Doc depth | Review owner docs touched by build | Important docs answer implementation/proof questions or are marked draft |
+| Judge depth | Run first-minute explanation | Judges see product, domain, AI loop, and improvement proof without setup talk |
+
 ## API Failure QA
 
 | Failure | Expected behavior |
@@ -49,6 +59,16 @@ Last updated: 2026-06-27
 - controls use icons where natural;
 - important data is visible without scrolling too much;
 - first screen looks like a real operations tool.
+
+## Documentation QA
+
+- docs that govern implementation identify owner, decision, acceptance criteria,
+  proof surface, and known limits;
+- short draft docs are either deepened before they guide work or explicitly
+  treated as temporary notes;
+- current or unstable external claims link to inspected sources before they
+  appear in demo copy or judge narrative;
+- stale docs are merged, removed, or clearly superseded.
 
 ## Final Verdict Labels
 

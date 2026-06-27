@@ -10,6 +10,7 @@ Start here:
 - `HACKATHON.md` for theme and prize strategy.
 - `REQUIREMENTS.md` for current product requirements.
 - `ARCHITECTURE.md` for the initial implementation shape.
+- `QUALITY_BAR.md` for the product, research, design, AI, and engineering bar.
 - `IMPLEMENTATION_PLAN.md` for the build sequence.
 - `RUNBOOK_24H.md` for the planned 24-hour execution model.
 - `LINEAR_PLAN.md` for the Linear tracking structure.
@@ -25,5 +26,5 @@ Start here:
 - `reports/` for synthesis reports.
 - `notes/` for durable work memory and follow-ups.
 
-Current status: hackathon strategy, ADR, PRD, requirements, architecture, and
-24-hour operating plan are ready for implementation.
+Current status: hackathon strategy, ADR, PRD, requirements, architecture,
+quality bar, and 24-hour operating plan are ready for implementation.

@@ -36,3 +36,8 @@ Update: Mark gave the Controller full project-manager ownership over the
 execution system. If the thread model, Linear structure, phase order, QA loop,
 or research split is not working, change it and record the new project truth
 instead of asking Mark to manage the process.
+
+Update: Mark clarified that hackathon speed does not lower the quality bar.
+The product should be genuinely great. Short `.md` files may start as drafts,
+but the Controller must deepen research, product thinking, QA, and owner docs
+as implementation reveals what matters.

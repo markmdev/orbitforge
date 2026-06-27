@@ -30,6 +30,8 @@ Project description:
 - `evals`
 - `qa`
 - `demo`
+- `quality`
+- `research-depth`
 - `blocker`
 - `stretch`
 
@@ -90,6 +92,16 @@ Proof gate:
 - dense readable layout;
 - no overlap;
 - first minute demo is obvious.
+
+### P1 - Deepen product quality and research owners
+
+Proof gate:
+
+- `QUALITY_BAR.md` review has no unresolved P0/P1 concerns;
+- domain, AI-product, design, and eval docs have been deepened where they guide
+  implementation;
+- shallow draft docs are merged, removed, or marked as non-authoritative;
+- current external claims used in demo copy or judge narrative are sourced.
 
 ### P1 - Add QA matrix and fix top findings
 

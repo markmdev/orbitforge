@@ -13,7 +13,7 @@ hackathon demo:
 
 The run is not done early. If the core demo works before the timer ends, keep
 improving polish, robustness, evals, traces, judge narrative, deployment,
-fallbacks, and QA until the timer expires.
+fallbacks, research depth, product depth, and QA until the timer expires.
 
 ## North Star
 
@@ -22,6 +22,7 @@ Win the hackathon by making judges believe three things within the first minute:
 1. This is not a chatbot or static dashboard.
 2. Gemini 3.5 is central to the system, not a wrapper.
 3. The system visibly improves itself and proves the improvement.
+4. The product feels unusually polished and credible for a 24-hour build.
 
 ## Operating Model
 
@@ -56,6 +57,8 @@ or the public demo claim.
 
 Linear tracks active work, blockers, proof gates, and follow-ups. Project files
 own architecture and product truth. The app owns runtime proof once it exists.
+`QUALITY_BAR.md` owns the standard for how deep and polished the product must
+become as the build progresses.
 
 ## 24-Hour Phases
 
@@ -214,6 +217,20 @@ If a phase finishes early, rotate through this queue:
 9. create a better final report/export;
 10. remove anything that feels fake or wrapper-like.
 
+## Continuous Loop For Depth
+
+When an implementation area, research note, or planning file feels superficial:
+
+1. find the current source, runtime behavior, or product decision it should be
+   grounded in;
+2. deepen the owner doc with the decision, evidence, acceptance criteria, proof
+   surface, and known limits;
+3. update the app, seed data, evals, or QA matrix if the research changes what
+   great should mean;
+4. merge or delete docs that no longer own a distinct piece of truth.
+
+Do not let a short first draft become the ceiling for the product.
+
 ## Continuous Loop When the System Is Not Working
 
 If progress slows, quality drops, or coordination starts producing noise:
@@ -252,6 +269,8 @@ Do not stop because the app is "done." Stop only when:
 - Change the execution system when evidence says it is not working, then record
   the replacement rule in `RUNBOOK_24H.md`, `THREAD_ORCHESTRATION.md`,
   `LINEAR_PLAN.md`, or the relevant note.
+- Use `QUALITY_BAR.md` as a recurring review surface; the demo is not complete
+  while the core product, AI loop, visual design, or proof still feels thin.
 - Give Mark concise status only when useful or at major phase boundaries.
 - Keep private coordination out of public/demo artifacts.
 

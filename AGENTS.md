@@ -16,6 +16,8 @@ orbital-compute operations agent improve itself over repeated simulated use.
 - `HACKATHON.md` owns hackathon theme, prize strategy, and judging priorities.
 - `REQUIREMENTS.md` owns current product requirements and acceptance criteria.
 - `ARCHITECTURE.md` owns the current implementation shape before code exists.
+- `QUALITY_BAR.md` owns the product depth, research depth, design, AI-product,
+  and engineering quality standard.
 - `RUNBOOK_24H.md` owns the 24-hour execution model once Mark kicks off a timed
   run.
 - `LINEAR_PLAN.md` owns the planned Linear project/issues before live Linear
@@ -41,6 +43,9 @@ orbital-compute operations agent improve itself over repeated simulated use.
 - Do not build a generic chatbot or static dashboard. The demo must show an AI
   operations loop improving from scenario runs, feedback, evaluation, and policy
   updates.
+- Treat hackathon speed as prioritization pressure, not permission for low
+  quality. When a doc, feature, eval, or design surface is shallow, deepen it,
+  merge it into a stronger owner, or remove it.
 - Use Gemini inside the app as a runtime product capability. Do not create
   prebuilt AGENTS/SKILL scaffolding for development-time orchestration.
 - Specialist Codex threads are helpers, not owners. The Controller must stay
@@ -62,7 +67,7 @@ orbital-compute operations agent improve itself over repeated simulated use.
   coordination details into project-owned research, notes, PRDs, ADRs, or
   reports only when future work needs them.
 - Before building UI, read `HACKATHON.md`, `REQUIREMENTS.md`, `ARCHITECTURE.md`,
-  `ADRs/ADR-0001-gemini-self-improving-orbital-ops.md`,
+  `QUALITY_BAR.md`, `ADRs/ADR-0001-gemini-self-improving-orbital-ops.md`,
   `PRDs/PRD-0001-orbitforge-hackathon-demo.md`, and
   `knowledge-base/README.md`.
 - Before starting a 24-hour timed execution run, read `RUNBOOK_24H.md`,
