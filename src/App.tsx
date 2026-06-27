@@ -17,6 +17,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { buildAuditSnapshot } from './ai/auditSnapshot';
 import type { GeminiComputerAuditTrace } from './ai/geminiComputerAudit';
 import { requestGeminiComputerAudit } from './ai/geminiComputerAudit';
+import type { GeminiHealthTrace } from './ai/geminiHealth';
+import { requestGeminiHealth } from './ai/geminiHealth';
 import type { GeminiCritiqueTrace, GeminiPlanTrace } from './ai/geminiPlan';
 import { requestGeminiCritique, requestGeminiPlan } from './ai/geminiPlan';
 import { OrbitMap } from './components/OrbitMap';
@@ -106,6 +108,12 @@ export function App() {
     model: 'gemini-3.5-flash',
     executionMode: 'propose_only',
     actions: [],
+  });
+  const [geminiHealthTrace, setGeminiHealthTrace] = useState<GeminiHealthTrace>({
+    status: 'loading',
+    model: 'gemini-3.5-flash',
+    cacheEntries: 0,
+    liveCallRequired: false,
   });
   const [reportStatus, setReportStatus] = useState<'idle' | 'copied' | 'blocked'>('idle');
   const [judgeReport, setJudgeReport] = useState('');
@@ -340,6 +348,9 @@ export function App() {
       incidentReadinessScore: incidentCommandSummary.readinessScore,
       incidentReadinessLabel: incidentCommandSummary.readinessLabel,
       appliedCommandLabels: incidentCommandSummary.appliedCommands.map((command) => command.label),
+      runtimeHealthStatus: geminiHealthTrace.status,
+      runtimeHealthError: geminiHealthTrace.error,
+      runtimeHealthCacheEntries: geminiHealthTrace.cacheEntries,
     });
     setJudgeReport(report);
 
@@ -389,6 +400,20 @@ export function App() {
       });
     }
   };
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    requestGeminiHealth().then((trace) => {
+      if (isCurrent) {
+        setGeminiHealthTrace(trace);
+      }
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -630,6 +655,13 @@ export function App() {
                 <BrainCircuit size={18} />
                 Gemini trace status
               </div>
+              <div className="runtime-health-strip">
+                <Metric label="Runtime health" value={formatRuntimeHealth(geminiHealthTrace)} />
+                <Metric label="Trace cache" value={String(geminiHealthTrace.cacheEntries)} />
+              </div>
+              {geminiHealthTrace.error && (
+                <p className="runtime-health-note">{geminiHealthTrace.error}</p>
+              )}
               <div className="trace-list compact">
                 {runtimeTraceEvents.map((event) => (
                   <div className="trace-row" key={event.id}>
@@ -1076,4 +1108,12 @@ function formatLatency(trace: GeminiPlanTrace | GeminiCritiqueTrace | GeminiComp
   }
 
   return trace.latencyMs ? `${trace.latencyMs} ms` : '--';
+}
+
+function formatRuntimeHealth(trace: GeminiHealthTrace): string {
+  if (trace.status === 'loading') {
+    return 'checking';
+  }
+
+  return trace.status;
 }

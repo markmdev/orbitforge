@@ -23,8 +23,8 @@ The app is a runnable orbital-compute mission console. It shows:
   propose-only actions, prompt-injection guard state, and exact quota/API
   blocker display;
 - judge report export with active policy state, current scores, incident
-  readiness, applied commands, Gemini status, audit mode, prompt guard, and
-  seeded-data guardrail.
+  readiness, applied commands, Gemini runtime health, Gemini status, audit
+  mode, prompt guard, and seeded-data guardrail.
 
 Known live state: Gemini API quota is currently returning
 `You do not have enough quota to make this request.` The app preserves the exact

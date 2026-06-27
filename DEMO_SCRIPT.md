@@ -122,6 +122,7 @@ Show Gemini computer-use audit:
 - computer-use actions remain propose-only and are not executed;
 - prompt-injection guard is enabled for the tool request;
 - proposed UI action or exact API/quota blocker shown;
+- runtime health strip shows configured/blocked state directly in the product;
 - result tied to judge-readiness QA.
 
 ### 2:40 - 3:00: Close
@@ -203,7 +204,10 @@ Latest rehearsal proof:
   fallback state with `Modepropose-only` and `Prompt guardenabled`.
 - Copy report included `Computer-use mode: propose-only`,
   `Prompt-injection guard: enabled`, active policy state, incident readiness,
-  applied commands, and seeded telemetry guardrail.
+  applied commands, runtime health, and seeded telemetry guardrail.
+- Console runtime health strip showed `configured` and trace cache count from
+  `/api/gemini/health`; judge report included
+  `Runtime health: configured; cache entries 12`.
 - Reset returned to Console with wildfire baseline.
 - Browser warnings/errors were empty in the fresh QA window, and mobile
   `390x844` had no horizontal overflow.

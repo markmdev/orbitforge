@@ -17,6 +17,7 @@ Last updated: 2026-06-27
 | Promotion | Promote candidate | Active policy changes, active score updates, operations log records promotion |
 | Work queue | Complete demo actions | Readiness moves from `1/5` to `5/5` as commands, promotion, audit run, and report export complete |
 | Trace | Open Gemini Trace | Model calls, generated artifacts, session ids when available, and audit state are visible |
+| Runtime health | Open Console | Gemini runtime health strip shows configured/blocked state from `/api/gemini/health` |
 | Audit | Run computer-use audit | Audit frame is generated; propose-only mode, prompt guard, action proposals or exact blocker are visible |
 | Honesty | Inspect copy | Seeded/simulated labels are visible |
 | Safety | Inspect controls | No real launch/command/uplink claims |
@@ -42,6 +43,8 @@ Current browser proof surfaces:
   from `34%` active to `83%` stabilized.
 - Gemini Trace: plan, critique, and computer-use audit panels preserve
   prompt/output previews and label live/fallback state.
+- Runtime health: Console shows `/api/gemini/health` status as `configured`,
+  displays trace cache count, and judge report exports the runtime health line.
 - Evaluation: guardrail canary is visible and blocks unsafe overclaiming
   mutation with deterministic evaluator proof.
 - Policy Lab: learning-memory write is visible and ties current scenario,
@@ -55,6 +58,8 @@ Current browser proof surfaces:
   result, `5/5` after report export, and resets to `1/5`.
 - Mobile command/queue proof: at `390x844`, command buttons and queue rows fit
   within `35-355px`; page `scrollWidth` equals viewport width `390`.
+- Mobile runtime-health proof: at `390x844`, health strip fits within
+  `35-355px`; page `scrollWidth` equals viewport width `390`.
 - Computer-use audit: Trace and judge report surface propose-only mode,
   prompt-injection guard state, and exact quota blocker when quota blocks live
   output.

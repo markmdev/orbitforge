@@ -635,6 +635,19 @@ h3 {
   margin-bottom: 10px;
 }
 
+.runtime-health-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.runtime-health-note {
+  margin: 0 0 10px;
+  color: var(--amber);
+  font-size: 0.88rem;
+}
+
 .readiness-meter {
   height: 10px;
   margin: 12px 0;
@@ -866,6 +879,7 @@ h3 {
   .score-grid,
   .command-summary,
   .queue-summary,
+  .runtime-health-strip,
   .trace-preview-grid {
     grid-template-columns: 1fr;
   }

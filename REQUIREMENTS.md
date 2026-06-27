@@ -98,6 +98,10 @@ All prompts, schemas, traces, and eval results should live in app-owned source
 and data paths. Gemini API calls should be wrapped under the app's AI service
 layer; Gemini Antigravity is an IDE and is not required.
 
+The app must also surface Gemini runtime health from `/api/gemini/health` so
+judges can see configured, blocked, or unavailable runtime state without a
+terminal.
+
 ### R7 - Gemini Computer Use Integration
 
 The implementation should use Gemini 3.5 Flash computer use for a visible UI or

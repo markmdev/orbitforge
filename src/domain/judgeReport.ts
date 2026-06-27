@@ -18,6 +18,9 @@ export type JudgeReportInput = {
   incidentReadinessScore?: number;
   incidentReadinessLabel?: string;
   appliedCommandLabels?: string[];
+  runtimeHealthStatus?: string;
+  runtimeHealthError?: string;
+  runtimeHealthCacheEntries?: number;
 };
 
 export function buildJudgeReport(input: JudgeReportInput): string {
@@ -45,6 +48,7 @@ export function buildJudgeReport(input: JudgeReportInput): string {
     `Promotion gate: ${input.promoted ? 'accepted' : 'held'}`,
     '',
     'Gemini surfaces:',
+    `- Runtime health: ${formatRuntimeHealth(input.runtimeHealthStatus, input.runtimeHealthError, input.runtimeHealthCacheEntries)}`,
     `- Operator plan: ${formatReportStatus(input.planStatus, input.planError)}`,
     `- Improvement critique: ${formatReportStatus(input.critiqueStatus, input.critiqueError)}`,
     `- Computer-use audit: ${formatReportStatus(input.auditStatus, input.auditError)}`,
@@ -84,4 +88,10 @@ function formatCommandLabels(labels?: string[]): string {
   }
 
   return labels.join(', ');
+}
+
+function formatRuntimeHealth(status?: string, error?: string, cacheEntries?: number): string {
+  const cacheSuffix = typeof cacheEntries === 'number' ? `; cache entries ${cacheEntries}` : '';
+
+  return error ? `${status ?? 'blocked'} (${error})${cacheSuffix}` : `${status ?? 'unknown'}${cacheSuffix}`;
 }
