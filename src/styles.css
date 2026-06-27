@@ -455,7 +455,8 @@ h3 {
 .activity-list,
 .work-queue-list,
 .timeline-list,
-.manifest-list {
+.manifest-list,
+.memory-ledger {
   display: grid;
   gap: 10px;
 }
@@ -469,6 +470,7 @@ h3 {
 .work-item,
 .timeline-step,
 .manifest-row,
+.memory-row,
 .ground-strip article {
   display: flex;
   justify-content: space-between;
@@ -506,23 +508,27 @@ h3 {
 .activity-row span:not(.source-pill),
 .work-item span,
 .timeline-step span,
-.manifest-row span {
+.manifest-row span,
+.memory-row span {
   color: var(--muted);
   font-size: 0.88rem;
 }
 
 .timeline-list,
-.manifest-list {
+.manifest-list,
+.memory-ledger {
   margin-top: 14px;
 }
 
 .timeline-step,
-.manifest-row {
+.manifest-row,
+.memory-row {
   align-items: flex-start;
 }
 
 .timeline-step div,
-.manifest-row div {
+.manifest-row div,
+.memory-row div {
   display: grid;
   gap: 4px;
   min-width: 0;
@@ -969,6 +975,7 @@ h3 {
   .work-item,
   .timeline-step,
   .manifest-row,
+  .memory-row,
   .scenario-row,
   .score-sweep-row,
   .ground-strip article,

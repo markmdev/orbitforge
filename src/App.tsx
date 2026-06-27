@@ -29,6 +29,7 @@ import { decidePromotion, evaluatePlan } from './domain/evaluator';
 import { applyIncidentCommand, getIncidentCommands, summarizeIncidentCommands } from './domain/incidentActions';
 import { runImprovementCycle } from './domain/improvement';
 import { buildJudgeReport, formatAuditMode, formatPromptGuard } from './domain/judgeReport';
+import { buildLearningMemoryEntry, type LearningMemoryEntry, upsertLearningMemory } from './domain/learningMemory';
 import { buildMissionExecution, type MissionExecution } from './domain/missionExecution';
 import { createStressDrill } from './domain/scenarioDrill';
 import { runPolicyOnScenario } from './domain/scenarioRunner';
@@ -82,6 +83,7 @@ const scoreDimensionLabels: Array<{ key: ScoreDimension; label: string }> = [
 ];
 
 const baselinePolicy = policyVersions[0];
+const learningMemoryStorageKey = 'orbitforge.learning-memory.v1';
 const initialOperatorLog: OperatorLogEntry[] = [
   {
     id: 'log-scenario-loaded',
@@ -130,6 +132,7 @@ export function App() {
   const [judgeReport, setJudgeReport] = useState('');
   const [geminiRunId, setGeminiRunId] = useState(0);
   const [missionExecution, setMissionExecution] = useState<MissionExecution | null>(null);
+  const [learningMemory, setLearningMemory] = useState<LearningMemoryEntry[]>(loadLearningMemoryEntries);
   const critiqueRequestIdRef = useRef(0);
   const activeScenario = scenarioLibrary.find((scenario) => scenario.id === activeScenarioId) ?? scenarios[0];
   const improvementCycle = useMemo(
@@ -156,6 +159,7 @@ export function App() {
     improvementCycle.mutation.targetFailures.length > 0
       ? improvementCycle.mutation.targetFailures.join(', ')
       : 'no below-threshold failures';
+  const currentMemoryEntry = learningMemory.find((entry) => entry.id === `${activeScenario.id}:${improvementCycle.mutation.id}`);
   const guardrailCanary = useMemo(() => {
     const unsafePolicy = {
       ...candidatePolicy,
@@ -381,10 +385,27 @@ export function App() {
   const runImprovementPass = () => {
     const requestId = critiqueRequestIdRef.current + 1;
     critiqueRequestIdRef.current = requestId;
+    const memoryEntry = buildLearningMemoryEntry({
+      scenario: activeScenario,
+      mutation: improvementCycle.mutation,
+      candidatePolicy,
+      failureSignature: learningFailureSignature,
+      activeDelta: primaryResult.decision.delta,
+      averageDelta: improvementCycle.averageDelta,
+      guardrailHeld: !guardrailCanary.decision.promoted,
+      promoted: improvementCycle.promoted,
+      createdAt: new Date().toISOString(),
+    });
+
     setStagedImprovementKey(improvementKey);
     setPromotedImprovementKey(null);
     setActivePolicy(baselinePolicy);
     setMissionExecution(null);
+    setLearningMemory((entries) => {
+      const nextEntries = upsertLearningMemory(entries, memoryEntry);
+      saveLearningMemoryEntries(nextEntries);
+      return nextEntries;
+    });
     setGeminiCritiqueTrace({ status: 'loading', model: 'gemini-3.5-flash' });
     setOperatorLog((entries) => [
       {
@@ -1150,10 +1171,36 @@ export function App() {
               <strong>Learning memory write</strong>
               <span>
                 {' '}
-                {improvementStaged
-                  ? `Seeded memory records ${activeScenario.id} failure signature ${learningFailureSignature} as candidate patch; retained only after golden sweep ${signedDelta(improvementCycle.averageDelta)} and guardrail canary hold.`
-                  : `No candidate memory has been written for ${activeScenario.id} yet.`}
+                {currentMemoryEntry
+                  ? `Seeded memory retained ${currentMemoryEntry.failureSignature} -> ${currentMemoryEntry.candidatePolicyName}; active delta ${signedDelta(currentMemoryEntry.activeDelta)}, sweep ${signedDelta(currentMemoryEntry.averageDelta)}, guardrail ${currentMemoryEntry.guardrailStatus}.`
+                  : `No retained memory has been written for ${activeScenario.id} yet.`}
               </span>
+            </div>
+            <div className="memory-ledger">
+              <div className="manifest-header">
+                <strong>Recent learning memory</strong>
+                <span>{learningMemory.length}/8 retained</span>
+              </div>
+              {learningMemory.length > 0 ? (
+                learningMemory.slice(0, 4).map((entry) => (
+                  <article className="memory-row" key={entry.id}>
+                    <div>
+                      <strong>{entry.scenarioName}</strong>
+                      <span>{entry.failureSignature}</span>
+                    </div>
+                    <span>
+                      {signedDelta(entry.activeDelta)} active / {signedDelta(entry.averageDelta)} sweep
+                    </span>
+                    <strong className={`event-status ${entry.retained ? 'complete' : 'blocked'}`}>
+                      {entry.retained ? 'retained' : 'held'}
+                    </strong>
+                  </article>
+                ))
+              ) : (
+                <div className="delta-banner">
+                  Run an improvement pass to write seeded learning memory into this browser.
+                </div>
+              )}
             </div>
             <div className="workflow-actions">
               <button
@@ -1386,6 +1433,51 @@ function getManifestWatermarkStatus(execution?: MissionExecution | null): 'attac
   const watermarkStates = new Set(execution.manifest.map((item) => item.watermark));
 
   return watermarkStates.size === 1 ? execution.manifest[0]?.watermark : 'mixed';
+}
+
+function loadLearningMemoryEntries(): LearningMemoryEntry[] {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const stored = window.localStorage.getItem(learningMemoryStorageKey);
+    const parsed: unknown = stored ? JSON.parse(stored) : [];
+
+    return Array.isArray(parsed) ? parsed.filter(isLearningMemoryEntry) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLearningMemoryEntries(entries: LearningMemoryEntry[]) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(learningMemoryStorageKey, JSON.stringify(entries));
+}
+
+function isLearningMemoryEntry(value: unknown): value is LearningMemoryEntry {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const entry = value as Partial<LearningMemoryEntry>;
+
+  return (
+    typeof entry.id === 'string' &&
+    typeof entry.scenarioId === 'string' &&
+    typeof entry.scenarioName === 'string' &&
+    typeof entry.mutationId === 'string' &&
+    typeof entry.candidatePolicyName === 'string' &&
+    typeof entry.failureSignature === 'string' &&
+    typeof entry.activeDelta === 'number' &&
+    typeof entry.averageDelta === 'number' &&
+    (entry.guardrailStatus === 'held' || entry.guardrailStatus === 'regressed') &&
+    typeof entry.retained === 'boolean' &&
+    typeof entry.createdAt === 'string'
+  );
 }
 
 function getGeminiTraceDetail(trace: GeminiPlanTrace): string {

@@ -14,11 +14,12 @@ The app is a runnable orbital-compute mission console. It shows:
 - Gemini 3.5 operator plan and improvement critique traces through app runtime
   API routes;
 - deterministic scorecards, policy mutation, A/B sweep, learning-memory
-  writeback, explicit operator-run improvement pass, scenario-scoped promotion
-  gate, first-viewport next-action command strip, scenario-aware incident
-  command deck, stateful operator promotion, seeded mission execution timeline,
-  delivered data-product manifest, actionable incident work queue, operations
-  log, and a visible unsafe-policy guardrail canary;
+  ledger persisted in browser state, explicit operator-run improvement pass,
+  scenario-scoped promotion gate, first-viewport next-action command strip,
+  scenario-aware incident command deck, stateful operator promotion, seeded
+  mission execution timeline, delivered data-product manifest, actionable
+  incident work queue, operations log, and a visible unsafe-policy guardrail
+  canary;
 - seeded stress-drill generation that appends a new what-if scenario to the
   current evaluation library and gives it a command deck;
 - Gemini 3.5 Flash computer-use audit path with a generated audit frame,
