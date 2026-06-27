@@ -41,6 +41,7 @@ npm test
 npm run build
 npm run verify:runtime
 npm run verify:preview
+npm run verify:demo
 ```
 
 Use `npm run verify:gemini` only when a live Gemini quota check is worth
